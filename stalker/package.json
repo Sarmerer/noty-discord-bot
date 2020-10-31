@@ -1,0 +1,16 @@
+{
+  "name": "stalker-discord-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js"
+  },
+  "author": "sarmerer",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^12.4.1",
+    "dotenv": "^8.2.0",
+    "lowdb": "^1.0.0"
+  }
+}
