@@ -4,7 +4,8 @@ const { respond } = require("../utils/utils");
 module.exports = {
   name: "stalkers",
   description: "list your stalkers",
-  execute(message, _) {
+  needAllGuilds: true,
+  execute(message, guilds) {
     let stalks = [];
     let stalkers = global.db
       .get("stalkers")
@@ -16,8 +17,19 @@ module.exports = {
         `${message.author.username} is not being stalked by anyone`
       );
     stalkers.forEach((s) => {
+      if (s.guildID != message.guild.id) {
+        let guild, member;
+        guild = guilds.cache.get(s.guildID);
+        if (guild) member = guild.members.cache.get(s.id);
+        if (member)
+          stalks.push(
+            `${member.user.username}#${member.user.discriminator} on server ${guild.name}`
+          );
+        return;
+      }
       let member = message.guild.members.cache.get(s.id);
-      if (member) stalks.push(`<@${member.user.id}>`);
+      if (member)
+        stalks.push(`${member.user.username}#${member.user.discriminator}`);
     });
     respond(
       message,

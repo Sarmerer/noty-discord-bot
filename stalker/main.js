@@ -57,7 +57,9 @@ client.on("message", (message) => {
   if (handler.args && !args.length && handler.usage)
     return respond(message, handler.usage);
   try {
-    handler.execute(message, args);
+    handler.needAllGuilds
+      ? handler.execute(message, client.guilds)
+      : handler.execute(message, args);
   } catch (error) {
     console.error(error);
     reply(message, strings.commandExecError);
@@ -65,7 +67,7 @@ client.on("message", (message) => {
   handleArgs(args, message);
 });
 
-client.on("presenceUpdate", (op, np) => {
+client.on("presenceUpdate", (op = { status: "offline" }, np) => {
   if (!(np.status == "online" && op.status == "offline")) return;
   let stalkers = global.db
     .get("stalkers")
