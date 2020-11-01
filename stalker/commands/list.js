@@ -26,7 +26,8 @@ module.exports = {
         return;
       }
       let member = message.guild.members.cache.get(t.target);
-      if (member) stalks.push(`${member.user.id}#${member.user.discriminator}`);
+      if (member)
+        stalks.push(`${member.user.username}#${member.user.discriminator}`);
     });
     respond(
       message,

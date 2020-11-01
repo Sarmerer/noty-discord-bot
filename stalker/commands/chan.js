@@ -15,7 +15,7 @@ module.exports = {
           ? `There is no notifications channel for this server, set it with ${this.usage}, or ask server owner to do that`
           : `Current notifications channel is <#${systemChanId}>`
         : `Current notifications channel is <#${guild.channel}>`;
-      text += `. State: ${guild.muted ? "`muted`" : "`unmuted`"}`;
+      text += `. State: ${guild && guild.muted ? "`muted`" : "`unmuted`"}`;
       return respond(message, text);
     }
     let hasPermission = message.guild.members.cache
