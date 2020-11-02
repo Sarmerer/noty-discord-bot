@@ -10,11 +10,6 @@ module.exports = {
     let args = split;
     return { args: args, command: command };
   },
-  handleArgs(args, message) {
-    if (args.includes("-d")) {
-      message.delete();
-    }
-  },
   getUserFromMention(message, mention) {
     if (!mention) return;
     if (mention.startsWith("<@") && mention.endsWith(">")) {

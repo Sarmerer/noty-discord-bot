@@ -1,5 +1,5 @@
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/sarmerer/stalker-discord-bot)
-![Discord Shield](https://discordapp.com/api/guilds/772146400792281128/widget.png?style=shield)
+![Discord](https://img.shields.io/discord/772146400792281128?label=get%20support)
 ![GitHub](https://img.shields.io/github/license/sarmerer/stalker-discord-bot)
 
 - [Getting Started](#getting-started)
@@ -7,7 +7,6 @@
   - [Windows](#windows)
   - [Linux](#linux)
 - [Commands](#commands)
-- [Flags](#flags)
 
 # Getting Started
 #### Requirements
@@ -18,18 +17,18 @@
 
 ## Windows
 
-Clone repo / download zip navigate to stalker-discord-bot folder, then create `.env` file in `stalker` subdirectory:
+Clone repo / download zip navigate to stalker-discord-bot, then copy `config.example.json` file in `stalker` subdirectory, and rename it to `config.json`:
 
-![Failed to laod image](https://github.com/Sarmerer/stalker-discord-bot/blob/master/images/env.png?raw=true)
+![](https://github.com/Sarmerer/stalker-discord-bot/blob/master/images/env.png?raw=true)
 
-put `DISCORD_BOT_TOKEN=<YOUR_TOKEN>` into that file.
+put your discord bot token into that file.
 Then run `npm run start` in your terminal.
 
 ## Linux
 ```bash
 git clone https://github.com/sarmerer/stalker-discord-bot.git
 cd stalker-discord-bot
-make env token="YOUR_TOKEN"
+make config token="your token"
 make npm-i
 make start
 ```
@@ -67,12 +66,3 @@ Administrators can change notifications channel with `//chan #new-channel`, or d
 //help
 ```
 Show available commands
-
-# Flags
-Flags are just like command arguments, the only difference is that they can be used, even if command not requires any argument.
-
-```js
--d //Example: //help -d
-```
-Automatically delete command caller's message, after bot's reponse.
-It does not delete bot's response, just your message.

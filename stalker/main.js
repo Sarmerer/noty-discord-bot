@@ -1,25 +1,12 @@
-// Set environment variables
-require("dotenv").config();
-if (!process.env.DISCORD_BOT_TOKEN) {
-  console.error(`Create a file called .env in project root folder,
-    and put there "DISCORD_BOT_TOKEN=<your token>", without quotes.`);
-  process.exit(1);
-}
-
 // Load dependencies
 const Discord = require("discord.js");
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
-const {
-  parseMessage,
-  reply,
-  respond,
-  handleArgs,
-} = require("./utils/utils.js");
+const { parseMessage, reply, respond } = require("./utils/utils.js");
 const strings = require("./strings");
 
 // Load config
-const { prefix, default_debounce } = require("./config.json");
+const { prefix, default_debounce, token } = require("./config.json");
 
 // Init database
 const lowdb = require("lowdb");
@@ -64,7 +51,6 @@ client.on("message", (message) => {
     console.error(error);
     reply(message, strings.commandExecError);
   }
-  handleArgs(args, message);
 });
 
 client.on("presenceUpdate", (op = { status: "offline" }, np) => {
@@ -140,4 +126,4 @@ client.on("guildMemberRemove", (member) => {
     .write();
 });
 
-client.login(process.env.DISCORD_BOT_TOKEN);
+client.login(token);

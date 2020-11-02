@@ -1,0 +1,5 @@
+{
+	"prefix": "//",
+	"default_debounce":30,
+	"token":"<your bot token>"
+}
