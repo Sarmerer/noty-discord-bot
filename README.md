@@ -1,5 +1,5 @@
 ![Libraries.io dependency status for GitHub repo](https://img.shields.io/librariesio/github/sarmerer/stalker-discord-bot)
-![Discord](https://img.shields.io/discord/772146400792281128?label=get%20support)
+[![Support](https://discordapp.com/api/guilds/772146400792281128/embed.png)](https://discord.gg/JB94rhqmVA)
 ![GitHub](https://img.shields.io/github/license/sarmerer/stalker-discord-bot)
 
 - [Getting Started](#getting-started)
