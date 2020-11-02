@@ -17,12 +17,10 @@
 
 ## Windows
 
-Clone repo / download zip navigate to stalker-discord-bot, then copy `config.example.json` file in `stalker` subdirectory, and rename it to `config.json`:
-
-![](https://github.com/Sarmerer/stalker-discord-bot/blob/master/images/env.png?raw=true)
-
-put your discord bot token into that file.
-Then run `npm run start` in your terminal.
+Clone repo / download zip navigate to stalker-discord-bot, then rename `config.example.json` file in `stalker` subdirectory, to `config.json` and put your discord bot token into that file.
+This is how it should look like:
+![](https://github.com/Sarmerer/stalker-discord-bot/blob/master/images/config.png?raw=true)
+Then simplt run `make.bat` by double clicking it.
 
 ## Linux
 ```bash
