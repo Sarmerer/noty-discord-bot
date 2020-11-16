@@ -24,7 +24,7 @@ This is how it should look like:
 
 ![](https://github.com/Sarmerer/stalker-discord-bot/blob/master/images/config.png?raw=true)
 
-Then simplt run `make.bat` by double clicking it.
+Then simply run `make.bat` by double clicking it.
 
 ## Linux
 ```bash
