@@ -1,4 +1,4 @@
-const { getChannelFromMention, respond, reply } = require("../utils/utils");
+const { getChannelFromMention, respond, reply } = require("../utils");
 const { prefix } = require("../config.json");
 
 module.exports = {

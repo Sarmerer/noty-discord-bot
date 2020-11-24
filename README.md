@@ -25,13 +25,15 @@ This is how it should look like:
 Then simplt run `make.bat` by double clicking it.
 
 ## Linux
-```bash
+```shell
 git clone https://github.com/sarmerer/stalker-discord-bot.git
 cd stalker-discord-bot
 make config token="your token"
 make npm-i
 make start
 ```
+
+Still need help? Get it on bot's [duscord server](https://discord.gg/JB94rhqmVA)
 
 # Commands
 

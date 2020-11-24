@@ -1,5 +1,5 @@
 const { prefix: p } = require("../config.json");
-const { respond } = require("../utils/utils");
+const { respond } = require("../utils");
 
 module.exports = {
   name: "help",

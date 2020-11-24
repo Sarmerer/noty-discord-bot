@@ -6,8 +6,21 @@
   "scripts": {
     "start": "node main.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Sarmerer/stalker-discrd-bot.git"
+  },
+  "keywords": [
+    "discord.js",
+    "discord",
+    "bot"
+  ],
   "author": "sarmerer",
-  "license": "ISC",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Sarmerer/stalker-discord-bot/issues"
+  },
+  "homepage": "https://github.com/Sarmerer/stalker-discord-bot#readme",
   "dependencies": {
     "discord.js": "^12.4.1",
     "lowdb": "^1.0.0"

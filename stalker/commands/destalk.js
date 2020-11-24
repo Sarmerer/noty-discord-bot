@@ -1,4 +1,4 @@
-const { getUserFromMention, reply, respond } = require("../utils/utils");
+const { getUserFromMention, reply, respond } = require("../utils");
 
 module.exports = {
   name: "destalk",

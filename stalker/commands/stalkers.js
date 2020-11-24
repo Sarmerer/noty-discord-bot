@@ -1,5 +1,5 @@
 const { MessageEmbed } = require("discord.js");
-const { respond } = require("../utils/utils");
+const { respond } = require("../utils");
 
 module.exports = {
   name: "stalkers",

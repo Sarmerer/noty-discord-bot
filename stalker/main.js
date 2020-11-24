@@ -2,11 +2,18 @@
 const Discord = require("discord.js");
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
-const { parseMessage, reply, respond } = require("./utils/utils.js");
+const { parseMessage, reply, respond } = require("./utils");
 const strings = require("./strings");
 
 // Load config
-const { prefix, default_debounce, token } = require("./config.json");
+const {
+  prefix,
+  default_debounce,
+  token,
+  home_server,
+  home_server_servers_stat,
+  home_server_stalkers_stat,
+} = require("./config.json");
 
 // Init database
 const lowdb = require("lowdb");
@@ -31,8 +38,8 @@ client.once("ready", () => {
     type: "LISTENING",
   });
 });
-client.on("warn", (info) => console.log(info));
-client.on("error", (error) => console.log(error));
+client.on("warn", console.log);
+client.on("error", console.error);
 
 client.on("message", (message) => {
   if (message.author.bot || !message.guild) return;
@@ -125,5 +132,25 @@ client.on("guildMemberRemove", (member) => {
     )
     .write();
 });
+
+setInterval(() => {
+  let guild = client.guilds.cache.get(home_server);
+  if (!guild) return;
+  let serversChannel = guild.channels.cache.get(home_server_servers_stat);
+  if (serversChannel) {
+    serversChannel
+      .edit({ name: `Servers: ${client.guilds.cache.size}` })
+      .catch(console.log);
+  }
+  let stalkersChannel = guild.channels.cache.get(home_server_stalkers_stat);
+  if (stalkersChannel) {
+    let stat = global.db
+      .get("stalkers")
+      .value()
+      .filter((v, i, s) => s.indexOf(v) === i).length;
+    console.log(stat);
+    stalkersChannel.edit({ name: `Stalkers: ${stat}` }).catch(console.log);
+  }
+}, 43200);
 
 client.login(token);

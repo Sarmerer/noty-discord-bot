@@ -1,4 +1,4 @@
-const { prefix } = require("../config.json");
+const { prefix } = require("./config.json");
 
 module.exports = {
   parseMessage(message) {
@@ -34,6 +34,6 @@ module.exports = {
       .catch((error) => console.log(error));
   },
   respond(message, text) {
-    message.channel.send(text).catch((error) => console.log(error));
+    return message.channel.send(text).catch((error) => console.log(error));
   },
 };
