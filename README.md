@@ -2,6 +2,8 @@
 [![Support](https://discordapp.com/api/guilds/772146400792281128/embed.png)](https://discord.gg/JB94rhqmVA)
 ![GitHub](https://img.shields.io/github/license/sarmerer/stalker-discord-bot)
 
+### You can now [inite stalker](https://top.gg/bot/466896345341362176) to your server!
+
 - [Getting Started](#getting-started)
       - [Requirements](#requirements)
   - [Windows](#windows)
@@ -22,7 +24,7 @@ This is how it should look like:
 
 ![](https://github.com/Sarmerer/stalker-discord-bot/blob/master/images/config.png?raw=true)
 
-Then simplt run `make.bat` by double clicking it.
+Then simply run `make.bat` by double clicking it.
 
 ## Linux
 ```shell
