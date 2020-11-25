@@ -19,6 +19,8 @@ ${p}chan <?channel | ?state> - show current notifications channel
 #state - variants: mute, unmute. If you want to disable notifications use: ${p}chan mute
 ${p}help - show this message
 
+Still need help? Ask your question on our official server: https://discord.gg/JB94rhqmVA
+
 \`\`\``;
     respond(message, text);
   },

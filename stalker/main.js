@@ -151,6 +151,6 @@ setInterval(() => {
     console.log(stat);
     stalkersChannel.edit({ name: `Stalkers: ${stat}` }).catch(console.log);
   }
-}, 43200);
+}, 2 * 60 * 60 * 1000);
 
 client.login(token);
