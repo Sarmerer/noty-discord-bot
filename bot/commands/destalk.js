@@ -22,9 +22,7 @@ module.exports = {
       `${message.author.username} not stalking ${target.username} anymore`
     );
     log(
-      `[${(message, author.username)}] has stopped stalking [${
-        target.username
-      }]`
+      `[${message.author.username}] has stopped stalking [${target.username}]`
     );
   },
 };
