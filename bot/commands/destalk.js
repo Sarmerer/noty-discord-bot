@@ -1,4 +1,5 @@
 const { getUserFromMention, reply, respond } = require("../utils");
+const { log } = require("../logger");
 
 module.exports = {
   name: "destalk",
@@ -19,6 +20,11 @@ module.exports = {
     respond(
       message,
       `${message.author.username} not stalking ${target.username} anymore`
+    );
+    log(
+      `[${(message, author.username)}] has stopped stalking [${
+        target.username
+      }]`
     );
   },
 };

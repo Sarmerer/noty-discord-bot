@@ -1,4 +1,5 @@
 const { prefix } = require("./config.json");
+const { log } = require("./logger");
 
 module.exports = {
   parseMessage(message) {
@@ -31,9 +32,11 @@ module.exports = {
     message
       .reply(text)
       .then((reply) => reply.delete({ timeout: timeout }))
-      .catch((error) => console.log(error));
+      .catch((error) => log(error, { error: true }));
   },
   respond(message, text) {
-    return message.channel.send(text).catch((error) => console.log(error));
+    return message.channel
+      .send(text)
+      .catch((error) => log(error, { error: true }));
   },
 };

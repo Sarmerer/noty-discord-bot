@@ -1,5 +1,6 @@
 const { getUserFromMention, reply, respond } = require("../utils");
-const { default_debounce } = require("../config.json");
+const { default_throttle } = require("../config.json");
+const { log } = require("../logger");
 
 module.exports = {
   name: "stalk",
@@ -10,10 +11,10 @@ module.exports = {
     let member = getUserFromMention(message, args[0]);
     if (!member) return reply(message, `Usage: ${this.usage}`);
     let debounce = Number.parseInt(args[1]);
-    if (args[1] && (!debounce || debounce < default_debounce))
+    if (args[1] && (!debounce || debounce < default_throttle))
       return reply(
         message,
-        `timeout should be a number, and can't be less than ${default_debounce} seconds`
+        `timeout should be a number, and can't be less than ${default_throttle} seconds`
       );
     let target = member.user;
     if (target.id == message.author.id)
@@ -44,6 +45,9 @@ module.exports = {
     respond(
       message,
       `${message.author.username} now stalks ${target.username}`
+    );
+    log(
+      `[${message.author.username}] has started stalking [${target.username}]`
     );
   },
 };

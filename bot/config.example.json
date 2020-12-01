@@ -1,0 +1,10 @@
+{
+  "prefix": "//",
+  "default_throttle": 30,
+  "token": "<your bot token>",
+
+  "home_server": "",
+  "home_server_servers_stat": "",
+  "home_server_stalkers_stat": "",
+  "home_server_logs_channel": ""
+}

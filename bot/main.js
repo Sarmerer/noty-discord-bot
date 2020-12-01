@@ -3,12 +3,13 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 client.commands = new Discord.Collection();
 const { parseMessage, reply, respond } = require("./utils");
+const { initLogger, log } = require("./logger");
 const strings = require("./strings");
 
 // Load config
 const {
   prefix,
-  default_debounce,
+  default_throttle,
   token,
   home_server,
   home_server_servers_stat,
@@ -25,7 +26,7 @@ global.db.defaults({ stalkers: [], guilds: [] }).write();
 // Load bot commads
 const fs = require("fs");
 const commandFiles = fs
-  .readdirSync("./commands")
+  .readdirSync("./bot/commands")
   .filter((file) => file.endsWith(".js"));
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
@@ -33,13 +34,14 @@ for (const file of commandFiles) {
 }
 
 client.once("ready", () => {
-  console.log(`${client.user.username} ready!`);
   client.user.setActivity(`${prefix}help`, {
     type: "LISTENING",
   });
+  initLogger(client.guilds.cache);
+  log(`${client.user.username} is up and running!`);
 });
-client.on("warn", console.log);
-client.on("error", console.error);
+client.on("warn", (warn) => log(warn, { warn: true }));
+client.on("error", (error) => log(error, { error: true }));
 
 client.on("message", (message) => {
   if (message.author.bot || !message.guild) return;
@@ -66,7 +68,7 @@ client.on("presenceUpdate", (op = { status: "offline" }, np) => {
     .get("stalkers")
     .filter((s) => {
       let dateDiff = new Date() - new Date(s.last_notification);
-      let debounce = (s.debounce || default_debounce) * 1000;
+      let debounce = (s.debounce || default_throttle) * 1000;
       return (
         s.target == np.userID &&
         dateDiff >= debounce &&
@@ -98,13 +100,13 @@ client.on("presenceUpdate", (op = { status: "offline" }, np) => {
       .get(guild.id)
       .channels.cache.get(guild.channel)
       .send(`<@${s.id}>, ${target.user.username} is online`)
-      .catch((err) => {
-        if (err.code == 50001)
+      .catch((error) => {
+        if (error.code == 50001)
           // Missing Access error
           return client.users.cache
             .get(np.guild.ownerID)
             .send(strings.missingAccess);
-        return console.log(err);
+        return log(error, { error: true });
       });
   }
 });
@@ -116,10 +118,12 @@ client.on("guildCreate", (guild) => {
       .push({ id: guild.id, channel: guild.systemChannelID, muted: false })
       .write();
   client.users.cache.get(guild.ownerID).send(strings.thankYou);
+  log(`joined [${guild.name}]`);
 });
 
 client.on("guildDelete", (guild) => {
   global.db.get("guilds").remove({ id: guild.id }).write();
+  log(`left [${guild.name}]`);
 });
 
 client.on("guildMemberRemove", (member) => {
@@ -140,7 +144,7 @@ setInterval(() => {
   if (serversChannel) {
     serversChannel
       .edit({ name: `Servers: ${client.guilds.cache.size}` })
-      .catch(console.log);
+      .catch((error) => log(error, { error: true }));
   }
   let stalkersChannel = guild.channels.cache.get(home_server_stalkers_stat);
   if (stalkersChannel) {
@@ -148,9 +152,10 @@ setInterval(() => {
       .get("stalkers")
       .value()
       .filter((v, i, s) => s.indexOf(v) === i).length;
-    console.log(stat);
-    stalkersChannel.edit({ name: `Stalkers: ${stat}` }).catch(console.log);
+    stalkersChannel
+      .edit({ name: `Stalkers: ${stat}` })
+      .catch((error) => log(error, { error: true }));
   }
-}, 2 * 60 * 60 * 1000);
+}, 60 * 60 * 1000);
 
 client.login(token);

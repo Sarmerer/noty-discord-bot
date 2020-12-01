@@ -1,5 +1,6 @@
 const { getChannelFromMention, respond, reply } = require("../utils");
 const { prefix } = require("../config.json");
+const { log } = require("../logger");
 
 module.exports = {
   name: "chan",
@@ -56,5 +57,8 @@ module.exports = {
         .write();
     }
     respond(message, `New notifications channels is <#${chan.id}>`);
+    log(
+      `[${message.author.username}] set notifications channel on [${chan.guild.name}] to [${chan.name}]`
+    );
   },
 };

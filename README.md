@@ -8,6 +8,7 @@
       - [Requirements](#requirements)
   - [Windows](#windows)
   - [Linux](#linux)
+  - [Logging](#logging)
 - [Commands](#commands)
 
 # Getting Started
@@ -19,23 +20,25 @@
 
 ## Windows
 
-Clone repo / download zip navigate to stalker-discord-bot, then rename `config.example.json` file in `stalker` subdirectory, to `config.json` and put your discord bot token into that file.
-This is how it should look like:
-
-![](https://github.com/Sarmerer/stalker-discord-bot/blob/master/images/config.png?raw=true)
-
-Then simply run `make.bat` by double clicking it.
+1. Clone repo / download zip and navigate to stalker-discord-bot
+2. Rename `config.example.json` file to `config.json` and put your discord bot token into that file.
+3. Run `make.bat` by double clicking it.
 
 ## Linux
-```shell
-git clone https://github.com/sarmerer/stalker-discord-bot.git
-cd stalker-discord-bot
-make config token="your token"
-make npm-i
-make start
-```
 
-Still need help? Get it on bot's [duscord server](https://discord.gg/JB94rhqmVA)
+1. Clone the repo `git clone https://github.com/sarmerer/stalker-discord-bot.git`
+2. Rename `config.example.json` to `config.json` and put your token there
+3. Run the bot `cd stalker-discord-bot && make cold-start`
+
+## Logging
+If you want your bot to log bot events/monitor stats - change needed key-value pairs in `config.json`
+
+* `home_server` - ID of aserver where the logs/stats will be
+* `home_server_servers_stat` - ID of a voice channel, name of which will indicate amount of servers with Stalker Bot
+* `home_server_stalkers_stat` - ID of a voice channel, name of which will indicate amount of stalkers
+* `home_server_logs_channel` - ID of a channel for bot events logs
+
+Still need help? Get it on bot's [discord server](https://discord.gg/JB94rhqmVA)
 
 # Commands
 
