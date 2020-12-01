@@ -19,7 +19,7 @@ const {
 // Init database
 const lowdb = require("lowdb");
 const FileSync = require("lowdb/adapters/FileSync");
-const adapter = new FileSync("./stalkers.json");
+const adapter = new FileSync("./bot/stalkers.json");
 global.db = lowdb(adapter);
 global.db.defaults({ stalkers: [], guilds: [] }).write();
 
