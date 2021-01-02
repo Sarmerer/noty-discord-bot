@@ -37,6 +37,13 @@ client.once("ready", () => {
   client.user.setActivity(`${prefix}help`, {
     type: "LISTENING",
   });
+  let sList = global.db.get("stalkers").value();
+  let cList = global.db.get("guilds").value();
+  for (let i = 0; i < sList.length; i++) {
+  if (!sList.some(s => s.id === sList[i].guildID)) {
+      global.db.get("guild").remove( { id: sList[i].guildID} ).write();
+    }
+  }
   initLogger(client.guilds.cache);
   log(`${client.user.username} is up and running!`);
 });
