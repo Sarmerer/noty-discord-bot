@@ -38,6 +38,7 @@ module.exports = {
       id: message.author.id,
       target: target.id,
       guildID: message.guild.id,
+      noOffline: args[1] && arts[1] === "noOffline",
       last_notification: new Date(),
     };
     if (debounce) newStalker.debounce = debounce;

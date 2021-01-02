@@ -83,7 +83,7 @@ client.on("presenceUpdate", (op = { status: "offline" }, np) => {
 
   for (s of stalkers) {
     let stalker = client.guilds.cache.get(s.guildID).members.cache.get(s.id);
-    if (stalker.presence.status == "offline") continue;
+    if (stalker.presence.status == "offline" && s.noOffline) continue;
     let guild = global.db.get("guilds").find({ id: s.guildID }).value();
     if (!guild)
       return client.users.cache
