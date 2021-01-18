@@ -38,7 +38,7 @@ const notify = (client, _, np) => {
     if (!stalker) continue;
     let status = stalker.presence.status;
     if ((status === "offline" || status === "dnd") && s.dnd) continue;
-    if (!modeCheck[s.mode](np.status)) continue;
+    if (!modeCheck[s.mode || "online"](np.status)) continue;
 
     let guild = global.db.get("guilds").find({ id: s.guildID }).value();
     if (!guild)
