@@ -4,9 +4,9 @@ let logChannel = {};
 
 function init(guildsCache) {
   let guild = guildsCache.get(home_server);
-  if (!guild) return console.log("could not find home server");
+  if (!guild) return { error: "could not find home server" };
   logChannel = guild.channels.cache.get(home_server_logs_channel);
-  if (!logChannel) return console.log("could not find logs channel");
+  if (!logChannel) return { error: "could not find logs channel" };
 }
 
 function log(text, options = { warn: false, error: false }) {
