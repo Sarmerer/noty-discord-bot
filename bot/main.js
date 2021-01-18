@@ -10,7 +10,6 @@ const strings = require("./strings");
 // Load config
 const {
   prefix,
-  default_throttle,
   token,
   home_server,
   home_server_servers_stat,

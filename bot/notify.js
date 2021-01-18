@@ -1,7 +1,9 @@
-const { log } = require("./logger");
 const { default_throttle } = require("./config.json");
+const strings = require("./strings");
+const { log } = require("./logger");
 
 const modes = ["all", "offline", "online"];
+const statuses = ["online", "offline"];
 
 const messages = {
   offline: (s, t) => `<@${s}>, ${t} went offline`,
@@ -15,6 +17,7 @@ const modeCheck = {
 };
 
 const notify = (client, _, np) => {
+  if (!statuses.includes(np.status)) return;
   let stalkers = global.db
     .get("stalkers")
     .filter((s) => {
