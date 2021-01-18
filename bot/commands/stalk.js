@@ -11,7 +11,7 @@ module.exports = {
   execute(message, args, flags) {
     let member = getUserFromMention(message, args[0]);
     if (!member) return reply(message, `Usage: ${this.usage}`);
-    const mode = flags["-m"];
+    const mode = flags["-m"] || "online";
     if (mode && !modes.includes(mode))
       return reply(
         message,
