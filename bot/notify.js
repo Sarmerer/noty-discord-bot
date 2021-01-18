@@ -11,12 +11,12 @@ const messages = {
 };
 
 const modeCheck = {
-  offline: (s) => s === "offline",
-  online: (s) => s === "online",
-  all: (_) => true,
+  offline: (o, n) => o !== "offline" && n === "offline",
+  online: (o, n) => o !== "online" && n === "online",
+  all: (o, n) => n !== o && (n === "offline" || n === "online"),
 };
 
-const notify = (client, _, np) => {
+const notify = (client, op, np) => {
   if (!statuses.includes(np.status)) return;
   let stalkers = global.db
     .get("stalkers")
@@ -41,7 +41,7 @@ const notify = (client, _, np) => {
     if (!stalker) continue;
     let status = stalker.presence.status;
     if ((status === "offline" || status === "dnd") && s.dnd) continue;
-    if (!modeCheck[s.mode || "online"](np.status)) continue;
+    if (!modeCheck[s.mode || "online"](op.status, np.status)) continue;
 
     let guild = global.db.get("guilds").find({ id: s.guildID }).value();
     if (!guild)
