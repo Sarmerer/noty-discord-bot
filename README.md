@@ -41,35 +41,47 @@ If you want your bot to log bot events/monitor stats - change needed key-value p
 Still need help? Get it on bot's [discord server](https://discord.gg/JB94rhqmVA)
 
 # Commands
+<> - optional argument
 
-Note: arguments starting with `?` are optional
+```
+//stalk @user <-t 30> <-m online | offline | all> <dnd> - start getting notifications, when user goes online
+#-t - timeout - default value 30, defines time, which should pass, before the next notification
+#-m - mode - default mode is online
+#dnd - do not disturb mode, you won't be getting notifications if you are offline or dnd
 
-```md
-//stalk <user> <?timeout> 
-```
-Start getting notifications, when user goes online.
-Timeout lets you set the amount of time, which should pass, before you get next notification. It can be unique for every user you stalk. Default value is 30 seconds.
+Modes:
+online - get notifications only when user goes online 
+offline - get notifications only when user goes offline
+all - get notifications when user goes online or offline
 
-```md
-//destalk <user>
+#examples:
+//stalk @Sobuck -m offline dnd - ✔️
+//stalk @Bot -m all - ✔️
+//stalk -m offline dnd @Sobuck - ❌
+//stalk sobuck#1234 - ❌
 ```
-Stop getting notifications about a user
 
-```md
-//list
 ```
-Show all people you stalk. User get's into the list, even if he is not a member of the guild, from which command was called.
+//destalk @user - stop getting notifications, when user goes online
+```
+```
+//stalkers - show people that stalk you
+```
+```
+//list - show all people you stalk
+```
+```
+//chan <#channel> <state> - show current notifications channel, set new, or mute all notifications
+#channel - you can set new notifications channel with it, requires administrator permission
+#state - variants: mute, unmute. If you want to disable notifications use: //chan mute
 
-```md
-//stalkers
+#examples:
+//chan - ✔️
+//chan #notifications - ✔️
+//chan mute - ✔️
+//chan notifications - ❌
 ```
-Show all people that stalk you. Works just like `//list`
-```md
-//chan <?channel | ?state>
-```
-Show current notifications channel, if no argument passed.
-Administrators can change notifications channel with `//chan #new-channel`, or disable notifications with `//chan mute`. To enable them back, use `//chan unmute`.
-```md
-//help
-```
-Show available commands
+
+```//help - show this message```
+
+Still need help? Ask your question on our official server: https://discord.gg/JB94rhqmVA
