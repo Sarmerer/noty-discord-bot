@@ -1,4 +1,5 @@
 const { log } = require("./logger");
+const { default_throttle } = require("./config.json");
 
 const modes = ["all", "offline", "online"];
 
@@ -38,7 +39,7 @@ const notify = (client, _, np) => {
     let status = stalker.presence.status;
     if ((status === "offline" || status === "dnd") && s.dnd) continue;
     if (!modeCheck[s.mode](np.status)) continue;
-    
+
     let guild = global.db.get("guilds").find({ id: s.guildID }).value();
     if (!guild)
       return client.users.cache
