@@ -4,6 +4,7 @@ const client = new Discord.Client();
 client.commands = new Discord.Collection();
 const { parseMessage, reply, respond } = require("./utils");
 const { initLogger, log } = require("./logger");
+const { notify } = require("./notify");
 const strings = require("./strings");
 
 // Load config
@@ -37,14 +38,10 @@ client.once("ready", () => {
   client.user.setActivity(`${prefix}help`, {
     type: "LISTENING",
   });
-  let sList = global.db.get("stalkers").value();
-  let cList = global.db.get("guilds").value();
-  for (let i = 0; i < sList.length; i++) {
-  if (!sList.some(s => s.id === sList[i].guildID)) {
-      global.db.get("guild").remove( { id: sList[i].guildID} ).write();
-    }
+  let li = initLogger(client.guilds.cache);
+  if (li?.error) {
+    throw new Error(li.error);
   }
-  initLogger(client.guilds.cache);
   log(`${client.user.username} is up and running!`);
 });
 client.on("warn", (warn) => log(warn, { warn: true }));
@@ -53,7 +50,7 @@ client.on("error", (error) => log(error, { error: true }));
 client.on("message", (message) => {
   if (message.author.bot || !message.guild) return;
 
-  let { args, command } = parseMessage(message);
+  let { command, args, flags } = parseMessage(message);
   if (!client.commands.has(command)) return;
 
   let handler = client.commands.get(command);
@@ -62,7 +59,7 @@ client.on("message", (message) => {
   try {
     handler.needAllGuilds
       ? handler.execute(message, client.guilds)
-      : handler.execute(message, args);
+      : handler.execute(message, args, flags);
   } catch (error) {
     console.error(error);
     reply(message, strings.commandExecError);
@@ -70,52 +67,7 @@ client.on("message", (message) => {
 });
 
 client.on("presenceUpdate", (op = { status: "offline" }, np) => {
-  if (!(np.status == "online" && op.status == "offline")) return;
-  let stalkers = global.db
-    .get("stalkers")
-    .filter((s) => {
-      let dateDiff = new Date() - new Date(s.last_notification);
-      let debounce = (s.debounce || default_throttle) * 1000;
-      return (
-        s.target == np.userID &&
-        dateDiff >= debounce &&
-        np.guild.id == s.guildID
-      );
-    })
-    .value();
-  if (!stalkers.length) return;
-  let target = client.guilds.cache
-    .get(np.guild.id)
-    .members.cache.get(np.userID);
-
-  for (s of stalkers) {
-    let stalker = client.guilds.cache.get(s.guildID).members.cache.get(s.id);
-    if (stalker.presence.status == "offline" && s.noOffline) continue;
-    let guild = global.db.get("guilds").find({ id: s.guildID }).value();
-    if (!guild)
-      return client.users.cache
-        .get(np.guild.ownerID)
-        .send(strings.couldNotSendANotification);
-
-    global.db
-      .get("stalkers")
-      .find({ id: s.id, target: s.target })
-      .assign({ last_notification: new Date() })
-      .write();
-    if (guild.muted) return;
-    client.guilds.cache
-      .get(guild.id)
-      .channels.cache.get(guild.channel)
-      .send(`<@${s.id}>, ${target.user.username} is online`)
-      .catch((error) => {
-        if (error.code == 50001)
-          // Missing Access error
-          return client.users.cache
-            .get(np.guild.ownerID)
-            .send(strings.missingAccess);
-        return log(error, { error: true });
-      });
-  }
+  notify(client, op, np);
 });
 
 client.on("guildCreate", (guild) => {

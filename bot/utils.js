@@ -4,12 +4,16 @@ const { log } = require("./logger");
 module.exports = {
   parseMessage(message) {
     if (!message) return;
-    if (message.content.substring(0, prefix.length) != prefix)
+    if (message.content.substring(0, prefix.length) !== prefix)
       return { args: [], command: "" };
     const split = message.content.slice(prefix.length).trim().split(/ +/);
     let command = split.shift();
     let args = split;
-    return { args: args, command: command };
+    let flags = {};
+    args.forEach((a, i) => {
+      if (a.match(/-[A-w]/) && args[i + 1]) flags[a] = args[i + 1];
+    });
+    return { args: args, command: command, flags: flags };
   },
   getUserFromMention(message, mention) {
     if (!mention) return;
