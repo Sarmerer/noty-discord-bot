@@ -55,9 +55,14 @@ const notify = (client, op, np) => {
       .assign({ last_notification: new Date() })
       .write();
     if (guild.muted) return;
-    client.guilds.cache
-      .get(guild.id)
-      .channels.cache.get(guild.channel)
+    guild = client.guilds.cache.get(guild.id);
+    if (!guild) return;
+    let channel = guildchannels.cache.get(guild.channel);
+    if (!channel)
+      return client.users.cache
+        .get(np.guild.ownerID)
+        .send(strings.channelMissing);
+    channel
       .send(messages[np.status](s.id, target.user.username))
       .catch((error) => {
         if (error.code == 50001)
