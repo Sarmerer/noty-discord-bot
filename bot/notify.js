@@ -55,9 +55,9 @@ const notify = (client, op, np) => {
       .assign({ last_notification: new Date() })
       .write();
     if (guild.muted) return;
-    guild = client.guilds.cache.get(guild.id);
-    if (!guild) return;
-    let channel = guildchannels.cache.get(guild.channel);
+    let ng = client.guilds.cache.get(guild.id);
+    if (!ng) return;
+    let channel = ng.channels.cache.get(guild.channel);
     if (!channel)
       return client.users.cache
         .get(np.guild.ownerID)
