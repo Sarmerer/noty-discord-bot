@@ -82,10 +82,11 @@ function addFlags(embed, flags) {
     let variants = "";
 
     if (values.variants) {
+      let vars = Object.entries(values.variants);
       variants = `#${values.header}\n` || "#variants:\n";
-      for (let i = 0; i < values.variants.length; i++) {
-        const variant = values.variants[i];
-        variants += `${i + 1}. ${variant.name} - ${variant.description}\n`;
+      for (let i = 0; i < vars.length; i++) {
+        const [name, description] = vars[i];
+        variants += `${i + 1}. ${name} - ${description}\n`;
       }
     }
 

@@ -30,11 +30,11 @@ module.exports = {
       default: "online",
       description: "select notifications mode",
       header: "variants: get notifications only when...",
-      variants: [
-        { name: "all", description: "user goes online or offline" },
-        { name: "offline", description: "user goes offline" },
-        { name: "online", description: "user goes online" },
-      ],
+      variants: {
+        all: "user goes online or offline",
+        offline: "user goes offline",
+        online: "user goes online",
+      },
       aliases: ["-m", "--mode"],
     },
     debounce: {
