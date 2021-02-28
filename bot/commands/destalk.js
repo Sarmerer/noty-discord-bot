@@ -38,7 +38,7 @@ module.exports = {
       return;
     }
 
-    let stalkedArray = [];
+    let targets = [];
 
     for (member of members) {
       if (
@@ -47,7 +47,7 @@ module.exports = {
           .filter((s) => s.id == message.author.id && s.target == member.id)
           .value().length
       )
-        stalkedArray.push(member.username);
+        targets.push(member.username);
 
       global.db
         .get("stalkers")
@@ -55,13 +55,14 @@ module.exports = {
         .write();
     }
 
-    if (!stalkedArray.length)
+    if (!targets.length)
       return reply(message, "you have not been stalking anyone in the list");
 
     let stalker = message.author.username,
-      stalked = `${stalkedArray
-        .slice(0, -1)
-        .join(", ")} and ${stalkedArray.slice(-1)}`,
+      stalked =
+        targets.length <= 1
+          ? `${targets.join("")}`
+          : `${targets.slice(0, -1).join(", ")} and ${targets.slice(-1)}`,
       server = message?.guild?.name || undefined;
 
     respond(message, `${stalker} not stalking ${stalked} anymore`);
