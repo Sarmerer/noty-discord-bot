@@ -2,7 +2,6 @@ const { default_throttle } = require("./config.json");
 const strings = require("./strings");
 const { log } = require("./logger");
 
-const modes = ["all", "offline", "online"];
 const statuses = ["online", "offline"];
 
 const messages = {
@@ -57,7 +56,8 @@ const notify = (client, op, np) => {
     if (guild.muted) return;
     let ng = client.guilds.cache.get(guild.id);
     if (!ng) return;
-    let channel = ng.channels.cache.get(guild.channel);
+    let channel =
+      ng.channels.cache.get(s.channel) || ng.channels.cache.get(guild.channel);
     if (!channel)
       return client.users.cache
         .get(np.guild.ownerID)
@@ -70,9 +70,12 @@ const notify = (client, op, np) => {
           return client.users.cache
             .get(np.guild.ownerID)
             .send(strings.missingAccess);
-        return log(error, { error: true });
+        return log(
+          `Error: ${error}${ng?.name ? ` | On server: ${ng?.name}` : ""}`,
+          { error: true }
+        );
       });
   }
 };
 
-module.exports = { modes, modeCheck, notify };
+module.exports = { modeCheck, notify };

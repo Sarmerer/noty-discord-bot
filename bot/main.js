@@ -1,8 +1,13 @@
 // Load dependencies
-const Discord = require("discord.js");
-const client = new Discord.Client();
-client.commands = new Discord.Collection();
-const { parseMessage, reply, respond } = require("./utils");
+const { client } = require("./client");
+
+const {
+  reply,
+  respond,
+  updateStat,
+  parseMessage,
+  getStalkersCount,
+} = require("./utils");
 const { initLogger, log } = require("./logger");
 const { notify } = require("./notify");
 const strings = require("./strings");
@@ -28,6 +33,7 @@ const fs = require("fs");
 const commandFiles = fs
   .readdirSync("./bot/commands")
   .filter((file) => file.endsWith(".js"));
+
 for (const file of commandFiles) {
   const command = require(`./commands/${file}`);
   client.commands.set(command.name, command);
@@ -37,9 +43,10 @@ client.once("ready", () => {
   client.user.setActivity(`${prefix}help`, {
     type: "LISTENING",
   });
-  let li = initLogger(client.guilds.cache);
-  if (li?.error) {
-    throw new Error(li.error);
+
+  let error = initLogger(client.guilds.cache);
+  if (error?.error) {
+    throw new Error(error.error);
   }
   log(`${client.user.username} is up and running!`);
 });
@@ -53,14 +60,16 @@ client.on("message", (message) => {
   if (!client.commands.has(command)) return;
 
   let handler = client.commands.get(command);
-  if (handler.args && !args.length && handler.usage)
-    return respond(message, handler.usage);
+  if (handler.needsArgs && !args.length && handler.usage)
+    return reply(message, handler.usage);
   try {
-    handler.needAllGuilds
-      ? handler.execute(message, client.guilds)
-      : handler.execute(message, args, flags);
+    handler.execute(message, args, flags);
   } catch (error) {
-    console.error(error);
+    log(
+      `Error: ${error}${
+        message?.guild?.name ? ` | On server: ${message.guild.name}` : ""
+      }`
+    );
     reply(message, strings.commandExecError);
   }
 });
@@ -76,11 +85,19 @@ client.on("guildCreate", (guild) => {
       .push({ id: guild.id, channel: guild.systemChannelID, muted: false })
       .write();
   client.users.cache.get(guild.ownerID).send(strings.thankYou);
+
+  updateStat("servers", client.guilds.cache.size);
   log(`joined [${guild.name}]`);
 });
 
 client.on("guildDelete", (guild) => {
   global.db.get("guilds").remove({ id: guild.id }).write();
+  global.db
+    .get("stalkers")
+    .remove((s) => s.guildID === guild.id)
+    .write();
+
+  updateStat("servers", client.guilds.cache.size);
   log(`left [${guild.name}]`);
 });
 
@@ -93,27 +110,8 @@ client.on("guildMemberRemove", (member) => {
         s.guildID == member.guild.id
     )
     .write();
-});
 
-setInterval(() => {
-  let guild = client.guilds.cache.get(home_server);
-  if (!guild) return;
-  let serversChannel = guild.channels.cache.get(home_server_servers_stat);
-  if (serversChannel) {
-    serversChannel
-      .edit({ name: `Servers: ${client.guilds.cache.size}` })
-      .catch((error) => log(error, { error: true }));
-  }
-  let stalkersChannel = guild.channels.cache.get(home_server_stalkers_stat);
-  if (stalkersChannel) {
-    let stat = global.db
-      .get("stalkers")
-      .value()
-      .filter((v, i, s) => s.indexOf(v) === i).length;
-    stalkersChannel
-      .edit({ name: `Stalkers: ${stat}` })
-      .catch((error) => log(error, { error: true }));
-  }
-}, 60 * 60 * 1000);
+  updateStat("stalkers", getStalkersCount());
+});
 
 client.login(token);

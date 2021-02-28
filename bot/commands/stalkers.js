@@ -1,11 +1,17 @@
 const { MessageEmbed } = require("discord.js");
 const { respond } = require("../utils");
+const { client } = require("../client");
+const { prefix } = require("../config.json");
 
 module.exports = {
   name: "stalkers",
-  description: "list your stalkers",
-  needAllGuilds: true,
-  execute(message, guilds) {
+  description: "list people that stalk you",
+  usage: `Usage: \`${prefix}stalkers\`.`,
+  examples: {
+    valid: [`${prefix}stalkers`],
+  },
+
+  execute(message) {
     let stalks = [];
     let stalkers = global.db
       .get("stalkers")
@@ -19,7 +25,7 @@ module.exports = {
     stalkers.forEach((s) => {
       if (s.guildID != message.guild.id) {
         let guild, member;
-        guild = guilds.cache.get(s.guildID);
+        guild = client.guilds.cache.get(s.guildID);
         if (guild) member = guild.members.cache.get(s.id);
         if (member)
           stalks.push(

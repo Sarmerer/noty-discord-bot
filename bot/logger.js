@@ -1,4 +1,3 @@
-const { Guild } = require("discord.js");
 const { home_server, home_server_logs_channel } = require("./config.json");
 let logChannel = {};
 

@@ -1,47 +1,112 @@
-const { prefix: p } = require("../config.json");
-const { respond } = require("../utils");
+const { MessageEmbed } = require("discord.js");
+const { prefix } = require("../config.json");
+const { respond, reply } = require("../utils");
+const { client } = require("../client");
+const fs = require("fs");
+const { description } = require("./chan");
 
 module.exports = {
   name: "help",
-  description: "print help",
-  execute(message, _) {
-    let text = `\`\`\`md
-<> - optional argument
+  description: "print list of commands, or get detailedusage of some command",
+  arguments: {
+    optional: ["command - name of a command you want to get help with"],
+  },
 
-Commands:
-${p}stalk @user <-t 30> <-m online | offline | all> <dnd> - start getting notifications, when user goes online
-#-t - timeout - default value 30, defines time, which should pass, before the next notification
-#-m - mode - default mode is online
-#dnd - do not disturb mode, you won't be getting notifications if you are offline or dnd
+  execute(message, args) {
+    if (args.length) {
+      if (!client.commands.has(args[0]))
+        return reply(
+          message,
+          `\`${args[0]}\` command not found, use \`${prefix}help\` to get a list of commands`
+        );
+      let command = client.commands.get(args[0]);
+      let embed = new MessageEmbed()
+        .setColor("#509624")
+        .setAuthor(
+          `command details: ${command.name}`,
+          client.user.displayAvatarURL()
+        );
 
-Modes:
-online - get notifications only when user goes online 
-offline - get notifications only when user goes offline
-all - get notifications when user goes online or offline
+      if (command.description) embed.setDescription(command.description);
+      if (command.arguments) addArguments(embed, command.arguments);
+      if (command.flags) addFlags(embed, command.flags);
+      if (command.examples) addExamples(embed, command.examples);
 
-#examples:
-${p}stalk @Sobuck -m offline dnd - ✔️
-${p}stalk @Bot -m all - ✔️
-${p}stalk -m offline dnd @Sobuck - ❌
-${p}stalk sobuck#1234 - ❌
+      return respond(message, embed);
+    }
 
-${p}destalk @user - stop getting notifications, when user goes online
-${p}stalkers - show people that stalk you
-${p}list - show all people you stalk
-${p}chan <#channel> <state> - show current notifications channel, set new, or mute all notifications
-#channel - you can set new notifications channel with it, requires administrator permission
-#state - variants: mute, unmute. If you want to disable notifications use: ${p}chan mute
+    let commands = [];
+    let embed = new MessageEmbed()
+      .setColor("#509624")
+      .setAuthor(
+        `${client.user.username} commands:`,
+        client.user.displayAvatarURL()
+      );
 
-#examples:
-${p}chan - ✔️
-${p}chan #notifications - ✔️
-${p}chan mute - ✔️
-${p}chan notifications - ❌
+    const commandFiles = fs
+      .readdirSync("./bot/commands")
+      .filter((file) => file.endsWith(".js"));
+    for (const file of commandFiles) {
+      const command = require(`./${file}`);
+      commands.push(command.name);
+    }
+    let joinedCommands = commands.join("`, `");
+    embed.setDescription(
+      `\`${joinedCommands}\`\n\nFor detailed description of a command call \`${prefix}help command\``
+    );
 
-${p}help - show this message
-
-Still need help? Ask your question on our official server: https://discord.gg/JB94rhqmVA
-\`\`\``;
-    respond(message, text);
+    respond(message, embed);
   },
 };
+
+function addArguments(embed, args) {
+  let info = "\n* - required | ? - optional\n";
+
+  let required = "";
+  let optional = "";
+  if (args?.required?.length) required = `\n* ${args.required.join("\n* ")}\n`;
+  if (args?.optional?.length) optional = `\n? ${args.optional.join("\n? ")}\n`;
+
+  if (required || optional)
+    embed.addField("Arguments:", `\`\`\`md${info}${required}${optional}\`\`\``);
+}
+
+function addFlags(embed, flags) {
+  let joinedFlags = "";
+  for (flag of Object.entries(flags)) {
+    let [, values] = flag;
+
+    let overview = `${values.aliases[0]} - ${values.description}\n`;
+    let aliases = `#aliases: ${values.aliases.join(", ")}\n`;
+    let defaultValue = `#default: ${values.default}\n`;
+    let variants = "";
+
+    if (values.variants) {
+      variants = `#${values.header}\n` || "#variants:\n";
+      for (let i = 0; i < values.variants.length; i++) {
+        const variant = values.variants[i];
+        variants += `${i + 1}. ${variant.name} - ${variant.description}\n`;
+      }
+    }
+
+    joinedFlags += `${overview}${aliases}${defaultValue}${variants}\n`;
+  }
+
+  if (joinedFlags)
+    embed.addField("Flags:", `${`\`\`\`md\n${joinedFlags}\`\`\``}`);
+}
+
+function addExamples(embed, examples) {
+  let valid = "";
+  if (examples.valid) {
+    let v = examples.valid.join(" - ✔️\n");
+    valid = `\n\`\`\`md\nValid:\n${v}  - ✔️\n\`\`\``;
+  }
+  let invalid = "";
+  if (examples.invalid) {
+    let i = examples.invalid.join(" - ❌\n");
+    invalid = `\n\`\`\`md\nInvalid:\n${i} - ❌\n\`\`\``;
+  }
+
+  if (valid || invalid) embed.addField("Examples:", `${valid}${invalid}`);
+}

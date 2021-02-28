@@ -1,23 +1,32 @@
 const { MessageEmbed } = require("discord.js");
 const { respond } = require("../utils");
+const { client } = require("../client");
+const { prefix } = require("../config.json");
 
 module.exports = {
   name: "list",
-  description: "list users you stalk",
-  needAllGuilds: true,
-  execute(message, guilds) {
+  description: "list all users you stalk",
+  usage: `Usage: \`${prefix}list\`.`,
+  examples: {
+    valid: [`${prefix}list`],
+  },
+
+  execute(message) {
     let stalks = [];
     let targets = global.db
       .get("stalkers")
       .filter({ id: message.author.id })
       .value();
     if (!targets.length)
-      return respond(message, `${message.author.username} not stalking anyone`);
+      return respond(
+        message,
+        `${message.author.username} is not stalking anyone`
+      );
 
     targets.forEach((t) => {
       if (t.guildID != message.guild.id) {
         let guild, member;
-        guild = guilds.cache.get(t.guildID);
+        guild = client.guilds.cache.get(t.guildID);
         if (guild) member = guild.members.cache.get(t.target);
         if (member)
           stalks.push(
@@ -32,7 +41,7 @@ module.exports = {
     respond(
       message,
       new MessageEmbed()
-        .setColor("#0099ff")
+        .setColor("#509624")
         .setAuthor(
           `${message.author.username} stalks:`,
           message.author.displayAvatarURL()

@@ -1,30 +1,48 @@
-const { prefix } = require("./config.json");
+const {
+  no_stats,
+  home_server,
+  home_server_servers_stat,
+  home_server_stalkers_stat,
+  prefix,
+} = require("./config.json");
+const { client } = require("./client");
 const { log } = require("./logger");
 
 module.exports = {
   parseMessage(message) {
     if (!message) return;
     if (message.content.substring(0, prefix.length) !== prefix)
-      return { args: [], command: "" };
+      return { command: "", args: [], flags: {} };
     const split = message.content.slice(prefix.length).trim().split(/ +/);
-    let command = split.shift();
-    let args = split;
-    let flags = {};
-    args.forEach((a, i) => {
-      if (a.match(/-[A-w]/) && args[i + 1]) flags[a] = args[i + 1];
-    });
+    let command = split.shift(),
+      args = split,
+      splicedArgs = [],
+      flags = {};
+
+    for (let i = 0; i < args.length; i++) {
+      let a = args[i];
+      if (a.match(/^-(\w|-\w+)$/gim) && args[i + 1]) {
+        flags[a.toLowerCase()] = args[i + 1].toLowerCase();
+        i++;
+      } else {
+        splicedArgs.push(a);
+      }
+    }
+    args = splicedArgs;
+
     return { args: args, command: command, flags: flags };
   },
   getUserFromMention(message, mention) {
     if (!mention) return;
     if (mention.startsWith("<@") && mention.endsWith(">")) {
       mention = mention.slice(2, -1);
-      if (mention.startsWith("!")) {
+      if (mention.match(/^[!|&]?/gim)) {
         mention = mention.slice(1);
       }
       return message.guild.members.cache.get(mention);
     }
   },
+
   getChannelFromMention(message, mention) {
     if (!mention) return;
     if (mention.startsWith("<#") && mention.endsWith(">")) {
@@ -32,15 +50,83 @@ module.exports = {
       return message.guild.channels.cache.get(mention);
     }
   },
+
+  getStalkersCount() {
+    return [
+      ...new Set(
+        global.db
+          .get("stalkers")
+          .value()
+          .map((s) => s.id)
+      ),
+    ].length;
+  },
+
+  getFlagValue(aliases, inputFlags, defaultValue = "") {
+    let value = defaultValue;
+    aliases.forEach((a) => {
+      if (inputFlags[a]) {
+        value = inputFlags[a];
+        return;
+      }
+    });
+    return value;
+  },
+
+  /**
+   * @param {('servers'|'stalkers')} name - name of a stat, that is being updated
+   * @param {any} newValue - new value of a selected stat
+   */
+  updateStat(name, newValue) {
+    if (no_stats) return;
+
+    let guild, channel;
+    const allowedStats = ["servers", "stalkers"];
+
+    if (!allowedStats.includes(name))
+      return log(`tried to update invalid stat: ${name}`, { warn: true });
+
+    guild = client.guilds.cache.get(home_server);
+    if (!guild) return log(`home server does not exist`, { warn: true });
+
+    channel = guild.channels.cache.get(
+      name === "servers" ? home_server_servers_stat : home_server_stalkers_stat
+    );
+
+    if (!channel)
+      return log(`channel for ${name} stat does not exisits`, { warn: true });
+
+    channel
+      .edit({ name: `${name}: ${newValue}` })
+      .catch((error) => log(error, { error: true }));
+  },
+
   reply(message, text, timeout = 5000) {
     message
       .reply(text)
       .then((reply) => reply.delete({ timeout: timeout }))
-      .catch((error) => log(error, { error: true }));
+      .catch((error) =>
+        log(
+          `Error: ${error}${
+            mention?.guild?.name ? ` | On server: ${mention.guild.name}` : ""
+          }`,
+          {
+            error: true,
+          }
+        )
+      );
   },
+
   respond(message, text) {
-    return message.channel
-      .send(text)
-      .catch((error) => log(error, { error: true }));
+    return message.channel.send(text).catch((error) =>
+      log(
+        `Error: ${error}${
+          message?.guild?.name ? ` | On server: ${message.guild.name}` : ""
+        }`,
+        {
+          error: true,
+        }
+      )
+    );
   },
 };

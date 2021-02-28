@@ -1,28 +1,72 @@
-const { getUserFromMention, reply, respond } = require("../utils");
+const {
+  getUserFromMention,
+  reply,
+  respond,
+  updateStat,
+  getStalkersCount,
+} = require("../utils");
+const { prefix } = require("../config.json");
 const { log } = require("../logger");
 
 module.exports = {
   name: "destalk",
   description: "stop stalking a user",
-  usage: "`//destalk <user>`",
-  args: true,
+  usage: `Usage: \`${prefix + this.prefix} @someone\`. Call ${prefix}help ${
+    this.name
+  } for more details.`,
+  needsArgs: true,
+  arguments: {
+    required: ["@someone... - user(s)/bot(s) which you want to destalk"],
+  },
+  examples: {
+    valid: [`${prefix}destalk @Sobuck`, `${prefix}destalk @Bot @Bot1 @Bot2`],
+    invalid: [`${prefix}destalkSobuck`],
+  },
+
   execute(message, args) {
-    let member = getUserFromMention(message, args[0]);
-    if (!member) {
-      reply(message, `Usage: ${this.usage}`);
+    let members = [];
+
+    args
+      .filter((a) => a.match(/^<@[!|&]?[0-9]+>$/gim))
+      .forEach((a) => {
+        let m = getUserFromMention(message, a);
+        if (m?.user) members.push(m.user);
+      });
+
+    if (!members.length) {
+      reply(message, this.usage);
       return;
     }
-    let target = member.user;
-    global.db
-      .get("stalkers")
-      .remove((s) => s.id == message.author.id && s.target == target.id)
-      .write();
-    respond(
-      message,
-      `${message.author.username} not stalking ${target.username} anymore`
-    );
-    log(
-      `[${message.author.username}] has stopped stalking [${target.username}]`
-    );
+
+    let stalkedArray = [];
+
+    for (member of members) {
+      if (
+        global.db
+          .get("stalkers")
+          .filter((s) => s.id == message.author.id && s.target == member.id)
+          .value().length
+      )
+        stalkedArray.push(member.username);
+
+      global.db
+        .get("stalkers")
+        .remove((s) => s.id == message.author.id && s.target == member.id)
+        .write();
+    }
+
+    if (!stalkedArray.length)
+      return reply(message, "you have not been stalking anyone in the list");
+
+    let stalker = message.author.username,
+      stalked = `${stalkedArray
+        .slice(0, -1)
+        .join(", ")} and ${stalkedArray.slice(-1)}`,
+      server = message?.guild?.name || undefined;
+
+    respond(message, `${stalker} not stalking ${stalked} anymore`);
+
+    updateStat("stalkers", getStalkersCount());
+    log(`[${stalker}] has stopped stalking [${stalked}] on server [${server}]`);
   },
 };
