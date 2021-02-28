@@ -11,7 +11,7 @@ const { log } = require("../logger");
 module.exports = {
   name: "destalk",
   description: "stop stalking a user",
-  usage: `Usage: \`${prefix}destalk @someone\`. Call ${prefix}help ${this.name} for more details.`,
+  usage: `Usage: \`${prefix}destalk @someone\`. Call \`${prefix}help destalk\` for more details.`,
   needsArgs: true,
   arguments: {
     required: ["@someone... - user(s)/bot(s) which you want to destalk"],
