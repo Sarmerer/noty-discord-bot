@@ -5,9 +5,7 @@ const { log } = require("../logger");
 module.exports = {
   name: "chan",
   description: "set default notifications channel",
-  usage: `Usage: \`${prefix + this.prefix} #channel\`. Call ${prefix}help ${
-    this.name
-  } for more details.`,
+  usage: `Usage: \`${prefix}chan #channel\`. Call ${prefix}help ${this.name} for more details.`,
   arguments: {
     required: ["#channel - mention of a new default notifications channel"],
   },

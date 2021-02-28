@@ -51,9 +51,14 @@ module.exports = {
       commands.push(command.name);
     }
     let joinedCommands = commands.join("`, `");
-    embed.setDescription(
-      `\`${joinedCommands}\`\n\nFor detailed description of a command call \`${prefix}help command\``
-    );
+    embed
+      .setDescription(
+        `\`${joinedCommands}\`\n\nFor detailed description of a command call \`${prefix}help command\``
+      )
+      .addField(
+        "Still need help?",
+        "[Join our support server to ask](https://discord.gg/JB94rhqmVA)"
+      );
 
     respond(message, embed);
   },

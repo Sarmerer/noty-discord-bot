@@ -15,9 +15,7 @@ const strings = require("../strings");
 module.exports = {
   name: "stalk",
   description: "start getting notifications, about user presence status",
-  usage: `Usage: \`${prefix + this.prefix} @someone\`. Call ${prefix}help ${
-    this.name
-  } for more details.`,
+  usage: `Usage: \`${prefix}stalk @someone\`. Call ${prefix}help ${this.name} for more details.`,
   needsArgs: true,
   arguments: {
     required: ["@someone... - user(s)/bot(s) which presence you want to stalk"],

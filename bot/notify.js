@@ -71,7 +71,9 @@ const notify = (client, op, np) => {
             .get(np.guild.ownerID)
             .send(strings.missingAccess);
         return log(
-          `Error: ${error}${ng?.name ? ` | On server: ${ng?.name}` : ""}`,
+          `Error: ${error}${
+            ng?.name ? ` | On server: [${ng?.name} - ${ng?.id}]` : ""
+          }`,
           { error: true }
         );
       });

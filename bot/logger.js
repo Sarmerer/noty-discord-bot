@@ -1,4 +1,8 @@
-const { home_server, home_server_logs_channel } = require("./config.json");
+const {
+  home_server,
+  home_server_logs_channel,
+  no_logs,
+} = require("./config.json");
 let logChannel = {};
 
 function init(guildsCache) {
@@ -10,6 +14,7 @@ function init(guildsCache) {
 
 function log(text, options = { warn: false, error: false }) {
   console.log(text);
+  if (no_logs) return;
   let type = options.warn ? "fix" : options.error ? "diff" : "yaml";
   let pref = options.error ? "-" : "";
   logChannel.send(`\`\`\`${type}\n${pref + text}\n\`\`\``).catch(console.log);

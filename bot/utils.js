@@ -108,7 +108,9 @@ module.exports = {
       .catch((error) =>
         log(
           `Error: ${error}${
-            mention?.guild?.name ? ` | On server: ${mention.guild.name}` : ""
+            mention?.guild?.name
+              ? ` | On server: [${ng?.name} - ${ng?.id}]`
+              : ""
           }`,
           {
             error: true,
@@ -121,7 +123,7 @@ module.exports = {
     return message.channel.send(text).catch((error) =>
       log(
         `Error: ${error}${
-          message?.guild?.name ? ` | On server: ${message.guild.name}` : ""
+          message?.guild?.name ? ` | On server: [${ng?.name} - ${ng?.id}]` : ""
         }`,
         {
           error: true,

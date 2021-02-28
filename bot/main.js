@@ -67,7 +67,7 @@ client.on("message", (message) => {
   } catch (error) {
     log(
       `Error: ${error}${
-        message?.guild?.name ? ` | On server: ${message.guild.name}` : ""
+        message?.guild?.name ? ` | On server: [${ng?.name} - ${ng?.id}]` : ""
       }`
     );
     reply(message, strings.commandExecError);
