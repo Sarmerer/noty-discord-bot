@@ -106,7 +106,9 @@ module.exports = {
         .value();
       if (!guild) {
         log(
-          "FATAL: could not get a guild from database, might be cause by database corruption or deletion",
+          `FATAL: could not get a guild from database, might be cause by database corruption or deletion${
+            guild?.name ? ` | On server: [${guild?.name} - ${guild?.id}]` : ""
+          }`,
           { error: true }
         );
         reply(message, "sorry, I ran into an internal problem");
@@ -117,7 +119,7 @@ module.exports = {
         client.users.cache.get(np.guild.ownerID).send(strings.channelMissing);
         reply(
           message,
-          "there is no notificaions channel for this channel, use a `--channel` flag to override default channel"
+          "there is no notificaions channel on this server, use a `--channel` flag to override default channel"
         );
         return;
       }
