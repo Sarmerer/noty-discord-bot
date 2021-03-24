@@ -1,5 +1,5 @@
 const {
-  getUserFromMention,
+  getMentionedUsers,
   reply,
   respond,
   updateStat,
@@ -12,7 +12,6 @@ module.exports = {
   name: "destalk",
   description: "stop stalking a user",
   usage: `Usage: \`${prefix}destalk @someone\`. Call \`${prefix}help destalk\` for more details.`,
-  needsArgs: true,
   arguments: {
     required: ["@someone... - user(s)/bot(s) which you want to destalk"],
   },
@@ -21,20 +20,9 @@ module.exports = {
     invalid: [`${prefix}destalkSobuck`],
   },
 
-  execute(message, args) {
-    let members = [];
-
-    args
-      .filter((a) => a.match(/^<@[!|&]?[0-9]+>$/gim))
-      .forEach((a) => {
-        let m = getUserFromMention(message, a);
-        if (m?.user) members.push(m.user);
-      });
-
-    if (!members.length) {
-      reply(message, this.usage);
-      return;
-    }
+  execute(message) {
+    let members = getMentionedUsers(message);
+    if (!members.length) return reply(message, this.usage);
 
     let targets = [];
 

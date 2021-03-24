@@ -32,15 +32,11 @@ module.exports = {
 
     return { args: args, command: command, flags: flags };
   },
-  getUserFromMention(message, mention) {
-    if (!mention) return;
-    if (mention.startsWith("<@") && mention.endsWith(">")) {
-      mention = mention.slice(2, -1);
-      if (mention.match(/^[!|&]?/gim)) {
-        mention = mention.slice(1);
-      }
-      return message.guild.members.cache.get(mention);
-    }
+  getMentionedUsers(message) {
+    if (!message?.mentions?.members) return;
+    return message.mentions.members
+      ? [...message.mentions.members.values()].map((m) => m.user)
+      : [];
   },
 
   getChannelFromMention(message, mention) {

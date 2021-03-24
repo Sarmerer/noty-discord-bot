@@ -1,5 +1,5 @@
 const {
-  getUserFromMention,
+  getMentionedUsers,
   reply,
   respond,
   getFlagValue,
@@ -61,15 +61,7 @@ module.exports = {
   },
 
   execute(message, args, flags) {
-    let members = [];
-
-    args
-      .filter((a) => a.match(/^<@[!|&]?[0-9]+>$/gim))
-      .forEach((a) => {
-        let m = getUserFromMention(message, a);
-        if (m?.user) members.push(m.user);
-      });
-
+    let members = getMentionedUsers(message);
     if (!members.length) return reply(message, this.usage);
 
     const mode = getFlagValue(this.flags.mode.aliases, flags, "online");
@@ -131,7 +123,7 @@ module.exports = {
     let lastNotification = d.setSeconds(d.getSeconds() - debounce);
     let targets = [];
 
-    for (member of members) {
+    for (let member of members) {
       if (member.id == message.author.id) continue;
 
       var alreadyStalking = global.db
