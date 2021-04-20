@@ -6,6 +6,7 @@ const {
   updateStat,
   getStalkersCount,
   getChannelFromMention,
+  addGuildToDB,
 } = require("../utils");
 const { prefix, default_throttle } = require("../config.json");
 const { log } = require("../logger");
@@ -97,18 +98,19 @@ module.exports = {
         .find({ id: message?.guild?.id })
         .value();
       if (!guild) {
+        guild = addGuildToDB(message.guild);
         log(
-          `FATAL: could not get a guild from database, might be cause by database corruption or deletion${
-            guild?.name ? ` | On server: [${guild?.name} - ${guild?.id}]` : ""
-          }`,
-          { error: true }
+          `created guild record in db${
+            message.guild?.name
+              ? ` | On server: [${message.guild?.name} - ${message.guild?.id}]`
+              : ""
+          }`
         );
-        reply(message, "sorry, I ran into an internal problem");
-        return;
       }
-
       if (!guild.channel) {
-        client.users.cache.get(np.guild.ownerID).send(strings.channelMissing);
+        client.users.cache
+          .get(message.guild.ownerID)
+          .send(strings.channelMissing);
         reply(
           message,
           "there is no notificaions channel on this server, use a `--channel` flag to override default channel"

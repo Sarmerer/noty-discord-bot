@@ -127,4 +127,13 @@ module.exports = {
       )
     );
   },
+
+  addGuildToDB(guild) {
+    if (!guild.systemChannelID) return;
+    const collection = global.db.get("guilds");
+    collection
+      .push({ id: guild.id, channel: guild.systemChannelID, muted: false })
+      .write();
+    return collection.find({ id: guild.id }).value();
+  },
 };
