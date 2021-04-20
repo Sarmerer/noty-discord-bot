@@ -3,23 +3,17 @@ const { client } = require("./client");
 
 const {
   reply,
-  respond,
   updateStat,
   parseMessage,
   getStalkersCount,
+  addGuildToDB,
 } = require("./utils");
 const { initLogger, log } = require("./logger");
 const { notify } = require("./notify");
 const strings = require("./strings");
 
 // Load config
-const {
-  prefix,
-  token,
-  home_server,
-  home_server_servers_stat,
-  home_server_stalkers_stat,
-} = require("./config.json");
+const { prefix, token } = require("./config.json");
 
 // Init database
 const lowdb = require("lowdb");
@@ -28,7 +22,7 @@ const adapter = new FileSync("./bot/stalkers.json");
 global.db = lowdb(adapter);
 global.db.defaults({ stalkers: [], guilds: [] }).write();
 
-// Load bot commads
+// Load commads
 const fs = require("fs");
 const commandFiles = fs
   .readdirSync("./bot/commands")
@@ -76,16 +70,12 @@ client.on("message", (message) => {
   }
 });
 
-client.on("presenceUpdate", (op = { status: "offline" }, np) => {
-  notify(client, op, np);
-});
+client.on("presenceUpdate", (op = { status: "offline" }, np) =>
+  notify(client, op, np)
+);
 
 client.on("guildCreate", (guild) => {
-  if (guild.systemChannelID)
-    global.db
-      .get("guilds")
-      .push({ id: guild.id, channel: guild.systemChannelID, muted: false })
-      .write();
+  addGuildToDB(guild);
   client.users.cache.get(guild.ownerID).send(strings.thankYou);
 
   updateStat("servers", client.guilds.cache.size);
