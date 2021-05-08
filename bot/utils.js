@@ -129,10 +129,14 @@ module.exports = {
   },
 
   addGuildToDB(guild) {
-    if (!guild.systemChannelID) return;
+    if (!guild) return undefined;
     const collection = global.db.get("guilds");
     collection
-      .push({ id: guild.id, channel: guild.systemChannelID, muted: false })
+      .push({
+        id: guild.id,
+        channel: guild.systemChannelID || "",
+        muted: false,
+      })
       .write();
     return collection.find({ id: guild.id }).value();
   },

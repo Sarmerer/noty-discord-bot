@@ -107,7 +107,7 @@ module.exports = {
           }`
         );
       }
-      if (!guild.channel) {
+      if (!guild?.channel) {
         client.users.cache
           .get(message.guild.ownerID)
           .send(strings.channelMissing);
