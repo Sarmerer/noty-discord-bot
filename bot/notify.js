@@ -5,8 +5,8 @@ const { log } = require("./logger");
 const statuses = ["online", "offline"];
 
 const messages = {
-  offline: (s, t) => `<@${s}>, ${t} went offline`,
-  online: (s, t) => `<@${s}>, ${t} is online`,
+  offline: (s, t, notag) => `${notag ? "" : `<@${s}>, `}${t} went offline`,
+  online: (s, t, notag) => `${notag ? "" : `<@${s}>, `}${t} is online`,
 };
 
 const modeCheck = {
@@ -62,21 +62,21 @@ const notify = (client, op, np) => {
       return client.users.cache
         .get(np.guild.ownerID)
         .send(strings.channelMissing);
-    channel
-      .send(messages[np.status](s.id, target.user.username))
-      .catch((error) => {
-        if (error.code == 50001)
-          // Missing Access error
-          return client.users.cache
-            .get(np.guild.ownerID)
-            .send(strings.missingAccess);
-        return log(
-          `Error: ${error}${
-            ng?.name ? ` | On server: [${ng?.name} - ${ng?.id}]` : ""
-          }`,
-          { error: true }
-        );
-      });
+
+    const text = messages[np.status](s.id, target.user.username, s.notag);
+    channel.send(text).catch((error) => {
+      if (error.code == 50001)
+        // Missing Access error
+        return client.users.cache
+          .get(np.guild.ownerID)
+          .send(strings.missingAccess);
+      return log(
+        `Error: ${error}${
+          ng?.name ? ` | On server: [${ng?.name} - ${ng?.id}]` : ""
+        }`,
+        { error: true }
+      );
+    });
   }
 };
 

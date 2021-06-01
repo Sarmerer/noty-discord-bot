@@ -2,7 +2,7 @@
 [![Support](https://discordapp.com/api/guilds/772146400792281128/embed.png)](https://discord.gg/JB94rhqmVA)
 ![GitHub](https://img.shields.io/github/license/sarmerer/stalker-discord-bot)
 
-### You can now [inite stalker](https://top.gg/bot/466896345341362176) to your server!
+### You can now [invite stalker](https://top.gg/bot/466896345341362176) to your server!
 
 - [Getting Started](#getting-started)
       - [Requirements](#requirements)

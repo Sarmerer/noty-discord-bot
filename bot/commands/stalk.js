@@ -22,6 +22,7 @@ module.exports = {
     required: ["@someone... - user(s)/bot(s) which presence you want to stalk"],
     optional: [
       "dnd -  do not disturb mode, you won't be getting notifications when you are offline or dnd",
+      "notag - no tag mode, bot won't tag you in notifications",
     ],
   },
   flags: {
@@ -119,10 +120,10 @@ module.exports = {
       }
       channel = guild.channel;
     }
-
-    let dnd = args.includes("dnd");
-    let d = new Date();
-    let lastNotification = d.setSeconds(d.getSeconds() - debounce);
+    const notag = args.includes("notag");
+    const dnd = args.includes("dnd");
+    const d = new Date();
+    const lastNotification = d.setSeconds(d.getSeconds() - debounce);
     let targets = [];
 
     for (let member of members) {
@@ -141,6 +142,7 @@ module.exports = {
         channel: channel,
         debounce: debounce,
         mode: mode,
+        notag: notag,
         dnd: dnd,
         last_notification: lastNotification,
       };
@@ -162,8 +164,8 @@ module.exports = {
     respond(
       message,
       `${stalker} now stalks ${stalked}, notifications will be in <#${channel}> channel. Mode: \`${mode}\`${
-        dnd ? ", `don't disturb` mode in on " : ""
-      }`
+        dnd ? ", `don't disturb` mode in on" : ""
+      }${notag ? ", notag mode is on" : ""}`
     );
 
     updateStat("stalkers", getStalkersCount());

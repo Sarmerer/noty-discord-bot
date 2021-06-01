@@ -21,7 +21,7 @@ module.exports = {
 
     for (let i = 0; i < args.length; i++) {
       let a = args[i];
-      if (a.match(/^-(\w|-\w+)$/gim) && args[i + 1]) {
+      if (a.match(/^-{1,2}\w+$/gim) && args[i + 1]) {
         flags[a.toLowerCase()] = args[i + 1].toLowerCase();
         i++;
       } else {
