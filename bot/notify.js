@@ -1,51 +1,63 @@
 const { default_throttle } = require("./config.json");
 const strings = require("./strings");
 const { log } = require("./logger");
+const { flags } = require("./commands/stalk");
 
-const statuses = ["online", "offline"];
+const statusVariants = Object.keys(flags.mode.variants);
 
-const messages = {
-  offline: (s, t, notag) => `${notag ? "" : `<@${s}>, `}${t} went offline`,
-  online: (s, t, notag) => `${notag ? "" : `<@${s}>, `}${t} is online`,
-};
+// const messages = {
+//   offline: (s, t, notag) => `${notag ? "" : `<@${s}>, `}${t} went offline`,
+//   online: (s, t, notag) => `${notag ? "" : `<@${s}>, `}${t} is online`,
+// };
 
-const modeCheck = {
-  offline: (o, n) => o !== "offline" && n === "offline",
-  online: (o, n) => o !== "online" && n === "online",
-  all: (o, n) => n !== o && (n === "offline" || n === "online"),
-};
+function shouldNotify(mode = "online", oldPresence, newPresence) {
+  const conds = {
+    ooo: (o, n) => n !== o && (n === "offline" || n === "online"),
+    offline: (o, n) => o !== "offline" && n === "offline",
+    online: (o, n) => o !== "online" && n === "online",
+    idle: (o, n) => o !== "idle" && n === "idle",
+    dnd: (o, n) => o !== "dnd" && n === "dnd",
+    any: (o, n) => n !== o,
+  };
 
-const notify = (client, op, np) => {
-  if (!statuses.includes(np.status)) return;
+  const fn = conds[mode];
+  if (typeof fn !== "function") return false;
+  return fn(oldPresence, newPresence);
+}
+
+const notify = (client, oldPresence, newPresence) => {
+  if (!statusVariants.includes(newPresence.status)) return;
   let stalkers = global.db
     .get("stalkers")
     .filter((s) => {
-      let dateDiff = new Date() - new Date(s.last_notification);
-      let debounce = (s.debounce || default_throttle) * 1000;
+      const dateDiff = new Date() - new Date(s.last_notification);
+      const debounce = (s.debounce || default_throttle) * 1000;
       return (
-        s.target == np.userID &&
+        s.target === newPresence.userID &&
         dateDiff >= debounce &&
-        np.guild.id == s.guildID
+        newPresence.guild.id === s.guildID
       );
     })
     .value();
   if (!stalkers.length) return;
 
   let target = client.guilds.cache
-    .get(np.guild.id)
-    .members.cache.get(np.userID);
+    .get(newPresence.guild.id)
+    .members.cache.get(newPresence.userID);
 
   for (s of stalkers) {
-    let stalker = client.guilds.cache.get(s.guildID).members.cache.get(s.id);
+    const stalker = client.guilds.cache.get(s.guildID).members.cache.get(s.id);
     if (!stalker) continue;
-    let status = stalker.presence.status;
-    if ((status === "offline" || status === "dnd") && s.dnd) continue;
-    if (!modeCheck[s.mode || "online"](op.status, np.status)) continue;
 
-    let guild = global.db.get("guilds").find({ id: s.guildID }).value();
-    if (!guild)
+    const stalkerStatus = stalker.presence.status;
+    if ((stalkerStatus === "offline" || stalkerStatus === "dnd") && s.dnd)
+      continue;
+    if (!shouldNotify(s.mode, oldPresence.status, newPresence.status)) continue;
+
+    const guildInDB = global.db.get("guilds").find({ id: s.guildID }).value();
+    if (!guildInDB)
       return client.users.cache
-        .get(np.guild.ownerID)
+        .get(newPresence.guild.ownerID)
         .send(strings.couldNotSendANotification);
 
     global.db
@@ -53,26 +65,34 @@ const notify = (client, op, np) => {
       .find({ id: s.id, target: s.target })
       .assign({ last_notification: new Date() })
       .write();
-    if (guild.muted) return;
-    let ng = client.guilds.cache.get(guild.id);
-    if (!ng) return;
-    let channel =
-      ng.channels.cache.get(s.channel) || ng.channels.cache.get(guild.channel);
+
+    if (guildInDB.muted) return;
+
+    const guild = client.guilds.cache.get(guildInDB.id);
+    if (!guild) return;
+
+    const channel =
+      guild.channels.cache.get(s.channel) ||
+      guild.channels.cache.get(guildInDB.channel);
     if (!channel)
       return client.users.cache
-        .get(np.guild.ownerID)
+        .get(newPresence.guild.ownerID)
         .send(strings.channelMissing);
 
-    const text = messages[np.status](s.id, target.user.username, s.notag);
+    const text = `${s.notag ? "" : `<@${s.id}>, `}${
+      target.user.username
+    } just went \`${newPresence.status}\``;
+    //messages[np.status](s.id, target.user.username, s.notag);
+
     channel.send(text).catch((error) => {
       if (error.code == 50001)
         // Missing Access error
         return client.users.cache
-          .get(np.guild.ownerID)
+          .get(newPresence.guild.ownerID)
           .send(strings.missingAccess);
       return log(
         `Error: ${error}${
-          ng?.name ? ` | On server: [${ng?.name} - ${ng?.id}]` : ""
+          guild?.name ? ` | On server: [${guild?.name} - ${guild?.id}]` : ""
         }`,
         { error: true }
       );
@@ -80,4 +100,4 @@ const notify = (client, op, np) => {
   }
 };
 
-module.exports = { modeCheck, notify };
+module.exports = { notify };
