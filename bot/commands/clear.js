@@ -1,6 +1,5 @@
-const { MessageEmbed } = require("discord.js");
 const { client } = require("../client");
-const { prefix } = require("../config.json");
+const { prefix, home_server } = require("../config.json");
 const { logError } = require("../logger");
 const { respond, updateStat } = require("../utils");
 
@@ -21,6 +20,7 @@ module.exports = {
     );
     let counter = 0;
     for (const id of guilds) {
+      if (id === home_server) continue;
       if (!stalkersGuilds.has(id)) {
         const guild = await client.guilds.fetch(id).catch(console.error);
         if (!guild) continue;
