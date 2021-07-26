@@ -1,6 +1,7 @@
 const { getChannelFromMention, respond, reply } = require("../utils");
 const { prefix } = require("../config.json");
 const { log } = require("../logger");
+const { client } = require("../client");
 
 module.exports = {
   name: "chan",
@@ -15,10 +16,10 @@ module.exports = {
   },
   permissions: ["ADMINISTRATOR"],
 
-  execute(message, args) {
+  async execute(message, args) {
     let guild = global.db.get("guilds").find({ id: message.guild.id }).value();
     if (!args.length) {
-      let systemChanId = message.guild.systemChannelID;
+      let systemChanId = message.guild.systemChannelId;
       let text = !guild
         ? !systemChanId
           ? `There is no notifications channel for this server, set it with \`${prefix}chan #channel\`, or ask server owner to do that`
@@ -27,26 +28,8 @@ module.exports = {
       text += `. State: ${guild && guild.muted ? "`muted`" : "`unmuted`"}`;
       return respond(message, text);
     }
-    let hasPermission = message.guild.members.cache
-      .get(message.author.id)
-      .hasPermission(this.permissions);
-    if (!hasPermission)
-      return reply(
-        message,
-        "You don't have a permission for that :slight_frown:"
-      );
-    // if (["mute", "unmute"].includes(args[0])) {
-    //   respond(
-    //     message,
-    //     `Channel is now ${args[0] == "mute" ? "muted" : "unmuted"}`
-    //   );
-    //   return global.db
-    //     .get("guilds")
-    //     .find({ id: message.guild.id })
-    //     .assign({ muted: args[0] == "mute" ? true : false })
-    //     .write();
-    // }
-    let chan = getChannelFromMention(message, args[0]);
+
+    let chan = await getChannelFromMention(message, args[0]);
     if (!chan) return reply(message, this.usage);
     let chanExsits = global.db
       .get("guilds")
@@ -66,7 +49,7 @@ module.exports = {
     }
     respond(message, `<#${chan.id}> is now a default notifications channel`);
     log(
-      `[${message.author.username}] set notifications channel on [${chan.guild.name}] to [${chan.name}]`
+      `\`${message.author.username}\` set notifications channel on \`${chan.guild.name}\` to \`${chan.name}\``
     );
   },
 };

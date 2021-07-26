@@ -1,9 +1,8 @@
-const { MessageEmbed } = require("discord.js");
+const { MessageEmbed, RichEmbed } = require("discord.js");
 const { prefix } = require("../config.json");
 const { respond, reply } = require("../utils");
 const { client } = require("../client");
 const fs = require("fs");
-const { description } = require("./chan");
 
 module.exports = {
   name: "help",
@@ -11,15 +10,23 @@ module.exports = {
   arguments: {
     optional: ["command - name of a command you want to get help with"],
   },
+  examples: {
+    valid: [`${prefix}help stalk`],
+  },
 
   execute(message, args) {
     if (args.length) {
       if (!client.commands.has(args[0]))
         return reply(
           message,
-          `\`${args[0]}\` command not found, use \`${prefix}help\` to get a list of commands`
+          `A command with name \`${args[0]}\` was not found, use \`${prefix}help\` to get a list of commands`
         );
-      let command = client.commands.get(args[0]);
+      const command = client.commands.get(args[0]);
+      if (command.unlisted)
+        return reply(
+          message,
+          `A command with name \`${args[0]}\` was not found, use \`${prefix}help\` to get a list of commands`
+        );
       let embed = new MessageEmbed()
         .setColor("#509624")
         .setAuthor(
@@ -32,35 +39,37 @@ module.exports = {
       if (command.flags) addFlags(embed, command.flags);
       if (command.examples) addExamples(embed, command.examples);
 
-      return respond(message, embed);
+      return respond(message, { embeds: [embed] });
     }
 
     let commands = [];
-    let embed = new MessageEmbed()
-      .setColor("#509624")
-      .setAuthor(
-        `${client.user.username} commands:`,
-        client.user.displayAvatarURL()
-      );
 
     const commandFiles = fs
       .readdirSync("./bot/commands")
       .filter((file) => file.endsWith(".js"));
     for (const file of commandFiles) {
       const command = require(`./${file}`);
+      if (command.unlisted) continue;
       commands.push(command.name);
     }
-    let joinedCommands = commands.join("`, `");
-    embed
-      .setDescription(
-        `\`${joinedCommands}\`\n\nFor detailed description of a command call \`${prefix}help command\``
-      )
-      .addField(
-        "Still need help?",
-        "[Join our support server to ask](https://discord.gg/JB94rhqmVA)"
-      );
+    const joinedCommands = commands.join("`, `");
+    const author = {
+      name: `${client.user.username} commands:`,
+      iconURL: client.user.displayAvatarURL(),
+    };
+    const description = `\`${joinedCommands}\`\n\nFor detailed description of a command call \`${prefix}help command\``;
+    const field = {
+      name: "Still need help?",
+      value: "[Join our support server to ask](https://discord.gg/JB94rhqmVA)",
+    };
 
-    respond(message, embed);
+    const embed = new MessageEmbed({
+      color: "#509624",
+      author,
+      description,
+      fields: [field],
+    });
+    respond(message, { embeds: [embed] });
   },
 };
 

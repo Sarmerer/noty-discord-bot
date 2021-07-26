@@ -7,6 +7,8 @@ const {
 } = require("../utils");
 const { prefix } = require("../config.json");
 const { log } = require("../logger");
+const { client } = require("../client");
+const { MessageEmbed } = require("discord.js");
 
 module.exports = {
   name: "destalk",
@@ -27,33 +29,46 @@ module.exports = {
     let targets = [];
 
     for (member of members) {
-      if (
-        global.db
-          .get("stalkers")
-          .filter((s) => s.id == message.author.id && s.target == member.id)
-          .value().length
-      )
-        targets.push(member.username);
+      const record = global.db
+        .get("stalkers")
+        .find({ id: message.author.id, target: member.id })
+        .value();
 
+      if (!record) continue;
+
+      targets.push(member.username);
       global.db
         .get("stalkers")
-        .remove((s) => s.id == message.author.id && s.target == member.id)
+        .remove({ id: message.author.id, target: member.id })
         .write();
     }
 
     if (!targets.length)
       return reply(message, "you have not been stalking anyone in the list");
 
-    let stalker = message.author.username,
+    const stalker = `\`${message.author.username}\``,
+      last = targets.slice(-1),
+      allButLast = targets.slice(0, -1).join("`, `"),
       stalked =
         targets.length <= 1
-          ? `${targets.join("")}`
-          : `${targets.slice(0, -1).join(", ")} and ${targets.slice(-1)}`,
-      server = message?.guild?.name || undefined;
+          ? `\`${targets.join("")}\``
+          : `\`${allButLast}\` and \`${last}\``,
+      guild = `\`${message?.guild?.name || undefined}\``;
 
-    respond(message, `${stalker} not stalking ${stalked} anymore`);
+    const author = {
+      name: "Record removed",
+      iconURL: client.user.displayAvatarURL(),
+    };
+    const description = `${stalker} not stalking ${stalked} anymore`;
+
+    const embed = new MessageEmbed({
+      color: "#509624",
+      author,
+      description,
+    });
+    respond(message, { embeds: [embed] });
 
     updateStat("stalkers", getStalkersCount());
-    log(`[${stalker}] has stopped stalking [${stalked}] on server [${server}]`);
+    log(`${stalker} has stopped stalking ${stalked} on server ${guild}`);
   },
 };

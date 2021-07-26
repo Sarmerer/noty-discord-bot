@@ -4,9 +4,10 @@ const {
   home_server_servers_stat,
   home_server_stalkers_stat,
   prefix,
+  ownerID,
 } = require("./config.json");
 const { client } = require("./client");
-const { log } = require("./logger");
+const { log, logError } = require("./logger");
 
 module.exports = {
   parseMessage(message) {
@@ -39,11 +40,13 @@ module.exports = {
       : [];
   },
 
-  getChannelFromMention(message, mention) {
+  async getChannelFromMention(message, mention) {
     if (!mention) return;
     if (mention.startsWith("<#") && mention.endsWith(">")) {
       mention = mention.slice(2, -1);
-      return message.guild.channels.cache.get(mention);
+      return await client.channels
+        .fetch(mention)
+        .catch((error) => logError(error, message));
     }
   },
 
@@ -73,59 +76,53 @@ module.exports = {
    * @param {('servers'|'stalkers')} name - name of a stat, that is being updated
    * @param {any} newValue - new value of a selected stat
    */
-  updateStat(name, newValue) {
+  async updateStat(name, newValue) {
     if (no_stats) return;
 
-    let guild, channel;
     const allowedStats = ["servers", "stalkers"];
 
     if (!allowedStats.includes(name))
       return log(`tried to update invalid stat: ${name}`, { warn: true });
 
-    guild = client.guilds.cache.get(home_server);
-    if (!guild) return log(`home server does not exist`, { warn: true });
-
-    channel = guild.channels.cache.get(
-      name === "servers" ? home_server_servers_stat : home_server_stalkers_stat
-    );
+    const chanID =
+      name === "servers" ? home_server_servers_stat : home_server_stalkers_stat;
+    const channel = client.channels
+      .fetch(chanID)
+      .catch(() =>
+        logError(`failed to find stat channel callel with id \`${chanID}\``)
+      );
 
     if (!channel)
       return log(`channel for ${name} stat does not exisits`, { warn: true });
 
-    channel
-      .edit({ name: `${name}: ${newValue}` })
-      .catch((error) => log(error, { error: true }));
+    channel.edit({ name: `${name}: ${newValue}` }).catch(logError);
   },
 
-  reply(message, text, timeout = 5000) {
+  reply(message, content, timeout = 10000) {
     message
-      .reply(text)
-      .then((reply) => reply.delete({ timeout: timeout }))
-      .catch((error) =>
-        log(
-          `Error: ${error}${
-            mention?.guild?.name
-              ? ` | On server: [${ng?.name} - ${ng?.id}]`
-              : ""
-          }`,
-          {
-            error: true,
-          }
-        )
-      );
+      .reply(content)
+      .then((reply) =>
+        setTimeout(() => {
+          if (reply.deletable) reply.delete();
+        }, timeout)
+      )
+      .catch((error) => logError(error, message));
   },
 
-  respond(message, text) {
-    return message.channel.send(text).catch((error) =>
-      log(
-        `Error: ${error}${
-          message?.guild?.name ? ` | On server: [${ng?.name} - ${ng?.id}]` : ""
-        }`,
-        {
-          error: true,
-        }
-      )
-    );
+  respond(message, content) {
+    return message.channel
+      .send(content)
+      .catch((error) => logError(error, message));
+  },
+
+  async directMessage(recipient, messageText) {
+    try {
+      const user = await client.users.fetch(recipient);
+      if (!user) return;
+      user.send(messageText);
+    } catch (error) {
+      logError(error);
+    }
   },
 
   addGuildToDB(guild) {
@@ -134,10 +131,23 @@ module.exports = {
     collection
       .push({
         id: guild.id,
-        channel: guild.systemChannelID || "",
+        channel: guild.systemChannelId || "",
         muted: false,
       })
       .write();
     return collection.find({ id: guild.id }).value();
+  },
+
+  hasPermissions(handler, message) {
+    if (!handler?.permissions?.length) return true;
+
+    if (
+      handler.permissions.includes("owner") &&
+      message?.author?.id !== ownerID
+    )
+      return false;
+
+    if (!message.member.permissions.has(handler.permissions)) return false;
+    return true;
   },
 };

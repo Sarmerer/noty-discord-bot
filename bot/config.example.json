@@ -2,6 +2,7 @@
   "prefix": "//",
   "default_throttle": 30,
   "token": "your bot token",
+  "ownerID": "your id",
 
   "no_stats": true,
   "no_logs": true,

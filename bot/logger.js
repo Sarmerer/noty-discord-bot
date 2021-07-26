@@ -1,23 +1,40 @@
-const {
-  home_server,
-  home_server_logs_channel,
-  no_logs,
-} = require("./config.json");
-let logChannel = {};
+const { home_server_logs_channel, no_logs } = require("./config.json");
+const { client } = require("./client");
 
-function init(guildsCache) {
-  let guild = guildsCache.get(home_server);
-  if (!guild) return { error: "could not find home server" };
-  logChannel = guild.channels.cache.get(home_server_logs_channel);
+let logChannel;
+
+async function init() {
+  logChannel = await client.channels
+    .fetch(home_server_logs_channel)
+    .catch(console.error);
   if (!logChannel) return { error: "could not find logs channel" };
 }
 
 function log(text, options = { warn: false, error: false }) {
-  console.log(text);
-  if (no_logs) return;
-  let type = options.warn ? "fix" : options.error ? "diff" : "yaml";
-  let pref = options.error ? "-" : "";
-  logChannel.send(`\`\`\`${type}\n${pref + text}\n\`\`\``).catch(console.log);
+  const esc = text?.replace?.(/`/gm, "");
+  if (esc) console.log(esc);
+  if (no_logs || !logChannel) return;
+  const type = options.warn ? "fix" : options.error ? "diff" : "";
+  const defaultType = !options.warn && !options.error;
+  const prefix = options.error ? "-" : "";
+  logChannel
+    .send(
+      `${defaultType ? "" : "```"}${type}\n${prefix + text}\n${
+        defaultType ? "" : "```"
+      }`
+    )
+    .catch(console.log);
 }
 
-module.exports = { initLogger: init, log: log };
+function logError(errorText, errorOrigin) {
+  log(
+    `${errorText}${
+      errorOrigin?.guild?.name
+        ? ` | On server: [${errorOrigin?.guild?.name} - ${errorOrigin?.guild?.id}]`
+        : ""
+    }`,
+    { error: true }
+  );
+}
+
+module.exports = { initLogger: init, log, logError };

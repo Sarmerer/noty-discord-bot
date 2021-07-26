@@ -9,9 +9,10 @@ const {
   addGuildToDB,
 } = require("../utils");
 const { prefix, default_throttle } = require("../config.json");
-const { log } = require("../logger");
+const { log, logError } = require("../logger");
 const { client } = require("../client");
 const strings = require("../strings");
+const { MessageEmbed } = require("discord.js");
 
 module.exports = {
   name: "stalk",
@@ -65,7 +66,7 @@ module.exports = {
     ],
   },
 
-  execute(message, args, flags) {
+  async execute(message, args, flags) {
     let members = getMentionedUsers(message);
     if (!members.length) return reply(message, this.usage);
 
@@ -92,7 +93,10 @@ module.exports = {
     let channel;
     const channelMention = getFlagValue(this.flags.channel.aliases, flags);
     if (channelMention) {
-      let channelFromMention = getChannelFromMention(message, channelMention);
+      let channelFromMention = await getChannelFromMention(
+        message,
+        channelMention
+      );
       if (!channelFromMention)
         return reply(message, `channel you have mentioned does not exist`);
       channel = channelFromMention?.id;
@@ -106,15 +110,16 @@ module.exports = {
         log(
           `created guild record in db${
             message.guild?.name
-              ? ` | On server: [${message.guild?.name} - ${message.guild?.id}]`
+              ? ` | On server: \`${message.guild?.name}\` - \`${message.guild?.id}\``
               : ""
           }`
         );
       }
       if (!guild?.channel) {
-        client.users.cache
-          .get(message.guild.ownerID)
-          .send(strings.channelMissing);
+        client.users
+          .fetch(message.guild.ownerId)
+          .then((user) => user.send(strings.channelMissing))
+          .catch((error) => logError(error, message));
         reply(
           message,
           "there is no notificaions channel on this server, use a `--channel` flag to override default channel"
@@ -132,13 +137,12 @@ module.exports = {
     for (let member of members) {
       if (member.id == message.author.id) continue;
 
-      var alreadyStalking = global.db
+      const alreadyStalking = global.db
         .get("stalkers")
-        .filter((s) => s.id == message.author.id && s.target == member.id)
+        .find({ id: message.author.id, target: member.id })
         .value();
-      if (alreadyStalking.length != 0) continue;
 
-      let newStalker = {
+      let record = {
         id: message.author.id,
         target: member.id,
         guildID: message.guild.id,
@@ -150,28 +154,63 @@ module.exports = {
         last_notification: lastNotification,
       };
 
-      global.db.get("stalkers").push(newStalker).write();
+      if (alreadyStalking) {
+        global.db
+          .get("stalkers")
+          .find({ id: message.author.id, target: member.id })
+          .assign(record)
+          .write();
+      } else {
+        global.db.get("stalkers").push(record).write();
+      }
       targets.push(member.username);
     }
 
     if (!targets.length)
       return reply(message, `you already stalk everyone you have mentioned`);
 
-    let stalker = message.author.username,
+    const stalker = `\`${message.author.username}\``,
+      last = targets.slice(-1),
+      allButLast = targets.slice(0, -1).join("`, `"),
       stalked =
         targets.length <= 1
-          ? `${targets.join("")}`
-          : `${targets.slice(0, -1).join(", ")} and ${targets.slice(-1)}`;
-    server = message?.guild?.name || undefined;
+          ? `\`${targets.join("")}\``
+          : `\`${allButLast}\` and \`${last}\``;
+    server = `\`${message?.guild?.name || undefined}\``;
 
-    respond(
-      message,
-      `${stalker} now stalks ${stalked}, notifications will be in <#${channel}> channel. Mode: \`${mode}\`${
-        dnd ? ", `don't disturb` mode in on" : ""
-      }${notag ? ", notag mode is on" : ""}`
-    );
+    const author = {
+      name: "Record created",
+      iconURL: client.user.displayAvatarURL(),
+    };
+    const description = `${stalker} now stalks ${stalked} in <#${channel}> channel`;
+    const fields = [
+      {
+        name: "Mode:",
+        value: `\`${mode}\``,
+        inline: true,
+      },
+      {
+        name: "DND:",
+        value: `\`${dnd}\``,
+        inline: true,
+      },
+      {
+        name: "No Tag",
+        value: `\`${notag}\``,
+        inline: true,
+      },
+    ];
+
+    const embed = new MessageEmbed({
+      color: "#509624",
+      author,
+      description,
+      fields,
+    });
+
+    respond(message, { embeds: [embed] });
 
     updateStat("stalkers", getStalkersCount());
-    log(`[${stalker}] has started stalking [${stalked}] on server [${server}]`);
+    log(`${stalker} now stalks ${stalked} on server ${server}`);
   },
 };

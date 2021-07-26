@@ -3,3 +3,4 @@ node_modules
 config.json
 .env
 start.sh
+package.lock.json

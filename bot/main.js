@@ -7,8 +7,9 @@ const {
   parseMessage,
   getStalkersCount,
   addGuildToDB,
+  hasPermissions,
 } = require("./utils");
-const { initLogger, log } = require("./logger");
+const { initLogger, log, logError } = require("./logger");
 const { notify } = require("./notify");
 const strings = require("./strings");
 
@@ -33,53 +34,52 @@ for (const file of commandFiles) {
   client.commands.set(command.name, command);
 }
 
-client.once("ready", () => {
+client.once("ready", async () => {
   client.user.setActivity(`${prefix}help`, {
     type: "LISTENING",
   });
 
-  let error = initLogger(client.guilds.cache);
+  let error = await initLogger();
   if (error?.error) {
     throw new Error(error.error);
   }
-  log(`${client.user.username} is up and running!`);
+  log(`\`${client.user.username}\` is up and running!`);
 });
 client.on("warn", (warn) => log(warn, { warn: true }));
-client.on("error", (error) => log(error, { error: true }));
+client.on("error", logError);
 
-client.on("message", (message) => {
+client.on("messageCreate", (message) => {
   if (message.author.bot || !message.guild) return;
 
   let { command, args, flags } = parseMessage(message);
   if (!client.commands.has(command)) return;
 
   let handler = client.commands.get(command);
+
+  if (!hasPermissions(handler, message))
+    return reply(message, "You are not allowed to use that.");
   if (handler.needsArgs && !args.length && handler.usage)
     return reply(message, handler.usage);
+
   try {
     handler.execute(message, args, flags);
   } catch (error) {
-    log(
-      `Error: ${error}${
-        message?.guild?.name
-          ? ` | On server: [${message?.guild?.name} - ${message?.guild?.id}]`
-          : ""
-      }`
-    );
     reply(message, strings.commandExecError);
+    logError(error, message);
   }
 });
 
-client.on("presenceUpdate", (op = { status: "offline" }, np) =>
-  notify(client, op, np)
-);
+client.on("presenceUpdate", (op = { status: "offline" }, np) => notify(op, np));
 
 client.on("guildCreate", (guild) => {
   addGuildToDB(guild);
-  client.users.cache.get(guild.ownerID).send(strings.thankYou);
+  client.users
+    .fetch(guild.ownerId)
+    .then((user) => user.send(strings.thankYou))
+    .catch(logError);
 
   updateStat("servers", client.guilds.cache.size);
-  log(`joined [${guild.name}]`);
+  log(`joined \`${guild.name}\``);
 });
 
 client.on("guildDelete", (guild) => {
@@ -90,7 +90,7 @@ client.on("guildDelete", (guild) => {
     .write();
 
   updateStat("servers", client.guilds.cache.size);
-  log(`left [${guild.name}]`);
+  log(`left \`${guild.name}\``);
 });
 
 client.on("guildMemberRemove", (member) => {
@@ -99,7 +99,7 @@ client.on("guildMemberRemove", (member) => {
     .remove(
       (s) =>
         (s.id == member.user.id || s.target == member.user.id) &&
-        s.guildID == member.guild.id
+        s.guildId == member.guild.id
     )
     .write();
 

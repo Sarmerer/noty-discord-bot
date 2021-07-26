@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/Sarmerer/stalker-discord-bot#readme",
   "dependencies": {
-    "discord.js": "^12.4.1",
+    "discord.js": "github:discordjs/discord.js",
     "lowdb": "^1.0.0"
   },
   "engines": {
