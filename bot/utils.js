@@ -86,7 +86,7 @@ module.exports = {
 
     const chanID =
       name === "servers" ? home_server_servers_stat : home_server_stalkers_stat;
-    const channel = client.channels
+    const channel = await client.channels
       .fetch(chanID)
       .catch(() =>
         logError(`failed to find stat channel callel with id \`${chanID}\``)
@@ -95,7 +95,7 @@ module.exports = {
     if (!channel)
       return log(`channel for ${name} stat does not exisits`, { warn: true });
 
-    channel.edit({ name: `${name}: ${newValue}` }).catch(logError);
+    channel.edit({ name: `${name}: ${newValue}` }).catch((error) => logError);
   },
 
   reply(message, content, timeout = 10000) {

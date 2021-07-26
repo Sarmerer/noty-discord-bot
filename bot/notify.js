@@ -52,8 +52,8 @@ const notify = async (oldPresence, newPresence) => {
       .catch((error) => logError(error, newPresence));
     if (!stalker) continue;
 
-    const stalkerStatus = stalker.presence.status;
-    if ((stalkerStatus === "offline" || stalkerStatus === "dnd") && s.dnd)
+    const stalkerStatus = stalker?.presence?.status;
+    if (stalkerStatus === "offline" || (stalkerStatus === "dnd" && s.dnd))
       continue;
 
     if (!shouldNotify(s.mode, oldPresence?.status, newPresence.status))

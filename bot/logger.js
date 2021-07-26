@@ -12,7 +12,11 @@ async function init() {
 
 function log(text, options = { warn: false, error: false }) {
   const esc = text?.replace?.(/`/gm, "");
-  if (esc) console.log(esc);
+  if (esc) {
+    if (options.error) console.error(esc);
+    else if (options.warn) console.warn(esc);
+    else console.log(esc);
+  }
   if (no_logs || !logChannel) return;
   const type = options.warn ? "fix" : options.error ? "diff" : "";
   const defaultType = !options.warn && !options.error;
