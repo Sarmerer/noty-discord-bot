@@ -17,6 +17,7 @@
 
 ⚠️ Be careful and don't publish your token anywhere!
 * [Node.js](https://nodejs.org) v12.0.0, or greater
+* [Git](https://git-scm.com/downloads)
 
 ## Windows
 
