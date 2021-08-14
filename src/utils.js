@@ -87,7 +87,7 @@ module.exports = {
       name === 'servers'
         ? config.home_server_servers_stat
         : config.home_server_stalkers_stat
-    const channel = client.channels
+    const channel = await client.channels
       .fetch(chanID)
       .catch(() =>
         logError(`failed to find stat channel with id \`${chanID}\``)
