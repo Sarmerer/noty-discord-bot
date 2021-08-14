@@ -1,10 +1,10 @@
 {
   "name": "stalker-discord-bot",
-  "version": "1.0.0",
+  "version": "1.4.2",
   "description": "",
-  "main": "./bot/main.js",
+  "main": "./src/index.js",
   "scripts": {
-    "start": "node ./bot/main.js"
+    "start": "node ./src/index.js"
   },
   "repository": {
     "type": "git",
@@ -21,8 +21,11 @@
     "url": "https://github.com/Sarmerer/stalker-discord-bot/issues"
   },
   "homepage": "https://github.com/Sarmerer/stalker-discord-bot#readme",
+  "imports": {
+    "#config": "./config/index.js"
+  },
   "dependencies": {
-    "discord.js": "github:discordjs/discord.js",
+    "discord.js": "^13.1.0",
     "lowdb": "^1.0.0"
   },
   "engines": {

@@ -1,7 +1,7 @@
-const { prefix } = require("./config.json");
+const prefix = require('#config').get('prefix')
 
 module.exports = {
-  name: "strings",
+  name: 'strings',
   thankYou: `Thanks for adding me to your server!
 
 I need a text channel set, where all the notifications will be.
@@ -18,9 +18,9 @@ You can contact me on this server, to get help: https://discord.gg/JB94rhqmVA`,
   missingAccess: `I don't have access to notifications channel, please change it with \`${prefix}chan #channel\`, on your server
   
   You can contact me on this server, to get help: https://discord.gg/JB94rhqmVA`,
-  commandExecError: "there was an error trying to execute that command!",
+  commandExecError: 'there was an error trying to execute that command!',
   channelMissing: `I could not send a notification, because notifications channel wasn't set or got deleted
 In order to set a new one go to your server and write \`${prefix}chan #channel\`.
 
 You can contact me on this server, to get help: https://discord.gg/JB94rhqmVA`,
-};
+}
