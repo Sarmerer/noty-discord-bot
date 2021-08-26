@@ -23,6 +23,10 @@ const adapter = new FileSync('./src/stalkers.json')
 global.db = lowdb(adapter)
 global.db.defaults({ stalkers: [], guilds: [] }).write()
 
+// console.info('[db]', 'Using', use_firebase ? 'Firebase' : 'LowDB')
+// const db = require('../db')
+// console.log(db)
+
 // Load commads
 const fs = require('fs')
 const commandFiles = fs
@@ -39,6 +43,7 @@ client.once('ready', async () => {
     type: 'LISTENING',
   })
 
+  console.info('[logger] is', config.no_logs ? 'disabled' : 'enabled')
   let error = await initLogger()
   if (error?.error) {
     throw new Error(error.error)

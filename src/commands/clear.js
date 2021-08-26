@@ -1,5 +1,5 @@
 const { client } = require('../client')
-const { prefix, home_server } = require('../config.json')
+const { prefix, home_server } = require('#config').get('prefix', 'home_server')
 const { logError } = require('../logger')
 const { respond, updateStat } = require('../utils')
 

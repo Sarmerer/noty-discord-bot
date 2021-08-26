@@ -60,7 +60,7 @@ const notify = async (oldPresence, newPresence) => {
       .assign({ last_notification: new Date() })
       .write()
 
-    const channel = getNotificaionChannel(s.channel, guildInDB.channel)
+    const channel = await getNotificaionChannel(s.channel, guildInDB.channel)
     if (!channel)
       return directMessage(newPresence.guild.ownerId, strings.channelMissing)
 
@@ -97,7 +97,7 @@ function filterStalkers(newPresence) {
   return stalkers
 }
 
-function getNotificaionChannel(channelID, defaultChannelID) {
+async function getNotificaionChannel(channelID, defaultChannelID) {
   if (!channelID && !defaultChannelID) return
 
   let channel = await client.channels.fetch(channelID).catch((error) => {

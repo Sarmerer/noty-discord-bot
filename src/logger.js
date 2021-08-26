@@ -4,6 +4,7 @@ const { client } = require('./client')
 let logChannel
 
 async function init() {
+  if (config.no_logs) return
   logChannel = await client.channels
     .fetch(config.home_server_logs_channel)
     .catch(console.error)
@@ -17,7 +18,7 @@ function log(text, options = { warn: false, error: false }) {
     else if (options.warn) console.warn(esc)
     else console.log(esc)
   }
-  if (config.no_logs || !logChannel) return
+  if (config.no_logs) return
   const type = options.warn ? 'fix' : options.error ? 'diff' : ''
   const defaultType = !options.warn && !options.error
   const prefix = options.error ? '-' : ''
