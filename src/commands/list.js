@@ -24,13 +24,13 @@ module.exports = {
 
       const guild = await client.guilds
         .fetch(t.guildID)
-        .catch((error) => logError(error, message))
+        .catch((error) => logError(error, { origin: message }))
 
       if (!guild) return
 
       const member = await client.users
         .fetch(t.target)
-        .catch((error) => logError(error, message))
+        .catch((error) => logError(error, { origin: message }))
 
       if (!member) return
 

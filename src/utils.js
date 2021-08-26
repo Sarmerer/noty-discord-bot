@@ -45,7 +45,7 @@ module.exports = {
       mention = mention.slice(2, -1)
       return await client.channels
         .fetch(mention)
-        .catch((error) => logError(error, message))
+        .catch((error) => logError(error, { origin: message }))
     }
   },
 
@@ -107,23 +107,19 @@ module.exports = {
           if (reply.deletable) reply.delete()
         }, timeout)
       )
-      .catch((error) => logError(error, message))
+      .catch((error) => logError(error, { origin: message }))
   },
 
   respond(message, content) {
     return message.channel
       .send(content)
-      .catch((error) => logError(error, message))
+      .catch((error) => logError(error, { origin: message }))
   },
 
   async directMessage(recipient, messageText) {
-    try {
-      const user = await client.users.fetch(recipient)
-      if (!user) return
-      user.send(messageText)
-    } catch (error) {
-      logError(error)
-    }
+    const user = await client.users.fetch(recipient).catch(logError)
+    if (!user) return
+    user.send(messageText).catch(logError)
   },
 
   addGuildToDB(guild) {

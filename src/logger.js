@@ -11,14 +11,14 @@ async function init() {
   if (!logChannel) return { error: 'could not find logs channel' }
 }
 
-function log(text, options = { warn: false, error: false }) {
+function log(text, options = { warn: false, error: false, silent: false }) {
   const esc = text?.replace?.(/`/gm, '')
   if (esc) {
     if (options.error) console.error(esc)
     else if (options.warn) console.warn(esc)
     else console.log(esc)
   }
-  if (config.no_logs) return
+  if (config.no_logs || options?.silent) return
   const type = options.warn ? 'fix' : options.error ? 'diff' : ''
   const defaultType = !options.warn && !options.error
   const prefix = options.error ? '-' : ''
@@ -31,14 +31,14 @@ function log(text, options = { warn: false, error: false }) {
     .catch(console.log)
 }
 
-function logError(errorText, errorOrigin) {
+function logError(errorText, options = { origin: null, silent: true }) {
   log(
     `${errorText}${
-      errorOrigin?.guild?.name
-        ? ` | On server: [${errorOrigin?.guild?.name} - ${errorOrigin?.guild?.id}]`
+      options?.origin?.guild?.name
+        ? ` | On server: [${options?.origin?.guild?.name} - ${options?.origin?.guild?.id}]`
         : ''
     }`,
-    { error: true }
+    { error: true, silent: !!options?.silent }
   )
 }
 

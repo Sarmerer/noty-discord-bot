@@ -25,7 +25,7 @@ module.exports = {
         const guild = await client.guilds.fetch(id).catch(console.error)
         if (!guild) continue
         if (typeof guild.leave === 'function') {
-          guild.leave().catch((error) => logError(error, message))
+          guild.leave().catch((error) => logError(error, { origin: message }))
           counter++
         }
       }

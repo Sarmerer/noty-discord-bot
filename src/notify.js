@@ -30,19 +30,19 @@ const notify = async (oldPresence, newPresence) => {
 
   const target = await client.users
     .fetch(newPresence.userId)
-    .catch((error) => logError(error, newPresence))
+    .catch((error) => logError(error, { origin: newPresence }))
   if (!target) return
 
   for (s of stalkers) {
     const stalker = await newPresence.guild.members
       .fetch(s.id)
       .catch((error) => {
-        if (error.httpStatus != 404) logError(error, newPresence)
+        if (error.httpStatus != 404) logError(error, { origin: newPresence })
       })
     if (!stalker) continue // TODO delete stalk record from database
 
-    const stalkerStatus = stalker.presence.status
-    if ((stalkerStatus === 'offline' || stalkerStatus === 'dnd') && s.dnd)
+    const stalkerStatus = stalker.presence?.status
+    if (s.dnd && (stalkerStatus === 'offline' || stalkerStatus === 'dnd'))
       continue
 
     if (!shouldNotify(s.mode, oldPresence?.status, newPresence.status)) continue
@@ -73,7 +73,7 @@ const notify = async (oldPresence, newPresence) => {
         // Missing Access error
         return directMessage(newPresence.guild.ownerId, strings.missingAccess)
 
-      return logError(error, newPresence)
+      return logError(error, { origin: newPresence })
     })
   }
 }

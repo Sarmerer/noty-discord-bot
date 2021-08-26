@@ -119,7 +119,7 @@ module.exports = {
         client.users
           .fetch(message.guild.ownerId)
           .then((user) => user.send(strings.channelMissing))
-          .catch((error) => logError(error, message))
+          .catch((error) => logError(error, { origin: message }))
         reply(
           message,
           'there is no notificaions channel on this server, use a `--channel` flag to override default channel'
