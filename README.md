@@ -16,7 +16,7 @@
 * Discord bot [token](https://discordjs.guide/preparations/setting-up-a-bot-application.html#creating-your-bot)
 
 ⚠️ Be careful and don't publish your token anywhere!
-* [Node.js](https://nodejs.org) v12.0.0, or greater
+* [Node.js](https://nodejs.org) v16, or greater
 * [Git](https://git-scm.com/downloads)
 
 ## Windows
