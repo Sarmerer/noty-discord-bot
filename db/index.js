@@ -1,9 +1,13 @@
 const use_firebase = require('#config').get('use_firebase')
 
-const db = use_firebase ? require('./firebase') : require('./lowdb')
+const { db, methods } = use_firebase
+  ? require('./firebase')
+  : require('./lowdb')
+console.info('[db]', 'Using', use_firebase ? 'Firebase' : 'LowDB')
+
 const requiredMethods = [
   'addGuild',
-  'getGuildByID',
+  'getGuildById',
   'updateGuild',
   'removeGuild',
 
@@ -18,15 +22,15 @@ const requiredMethods = [
   'getGuildsCount',
 ]
 
-const methods = {}
+// const methods = {}
 
-for (const method of requiredMethods) {
-  if (typeof db[method] !== 'function') {
-    throw new Error(
-      `Database method ${method} is not defined or not a function`
-    )
-  }
-  methods[method] = db[method]
-}
+// for (const method of requiredMethods) {
+//   if (typeof db[method] !== 'function') {
+//     throw new Error(
+//       `Database method ${method} is not defined or not a function`
+//     )
+//   }
+//   methods[method] = db[method]
+// }
 
-module.exports = { db, ...methods }
+module.exports = { db, methods }
