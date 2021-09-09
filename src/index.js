@@ -53,6 +53,16 @@ client.once('ready', async () => {
 client.on('warn', (warn) => log(warn, { warn: true }))
 client.on('error', logError)
 
+client.on('interactionCreate', (interaction) => {
+  const channel = interaction.options.getChannel('channel')
+  if (channel && channel.type !== 'GUILD_TEXT')
+    return interaction.reply({
+      content: 'Channel passed in a "channel" option must be a text channel',
+      ephemeral: true,
+    })
+  interaction.reply('success')
+})
+
 client.on('messageCreate', (message) => {
   if (message.author.bot || !message.guild) return
 
@@ -74,7 +84,7 @@ client.on('messageCreate', (message) => {
   }
 })
 
-client.on('presenceUpdate', (op = { status: 'offline' }, np) => notify(op, np))
+client.on('presenceUpdate', (op, np) => notify(op, np))
 
 client.on('guildCreate', (guild) => {
   addGuildToDB(guild)

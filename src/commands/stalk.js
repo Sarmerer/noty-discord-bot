@@ -7,8 +7,13 @@ const {
   getStalkersCount,
   getChannelFromMention,
   addGuildToDB,
+  getRoleFromMention,
 } = require('../utils')
-const config = require('#config').get('prefix', 'default_throttle')
+const config = require('#config').get(
+  'prefix',
+  'default_throttle',
+  'master_role'
+)
 const { log, logError } = require('../logger')
 const { client } = require('../client')
 const strings = require('../strings')
@@ -22,6 +27,7 @@ module.exports = {
   arguments: {
     required: ['@someone... - user(s)/bot(s) which presence you want to stalk'],
     optional: [
+      'dm - send notifications into direct messages',
       "dnd -  do not disturb mode, you won't be getting notifications when you are offline or dnd",
       "notag - no tag mode, bot won't tag you in notifications",
     ],
@@ -39,18 +45,23 @@ module.exports = {
         idle: 'user goes idle',
         dnd: 'user goes dnd',
       },
-      aliases: ['-m', '--mode'],
+      aliases: ['--mode', '-m'],
     },
     debounce: {
       default: 30,
       description:
         'set time (seconds), that should pass, before a next notification',
-      aliases: ['-t', '--timeout', '--time'],
+      aliases: ['--timeout', '--time', '-t'],
     },
     channel: {
       default: "system channel, or a channel set by server's owner",
       description: 'override default notifications channel',
-      aliases: ['-c', '--chan', '--channel'],
+      aliases: ['--channel', '--chan', '-c'],
+    },
+    role: {
+      description:
+        'requires a user, that uses this flag, to have a role called "Stalk Master". This flag defines a role, that will be tagged in notifications',
+      aliases: ['--role', '-r'],
     },
   },
   examples: {
@@ -58,6 +69,7 @@ module.exports = {
       `${config.prefix}stalk @Sobuck -m offline dnd`,
       `${config.prefix}stalk @Bot @Bot1 @Bot2 -mode all -c #bots`,
       `${config.prefix}stalk @Someone`,
+      `${config.prefix}stalk @User --role @somerole`,
     ],
     invalid: [
       `${config.prefix}stalk Sobuck -m`,
@@ -90,6 +102,21 @@ module.exports = {
         `timeout should be a number, and can't be less than ${config.default_throttle} seconds`
       )
 
+    let guildCache = global.db
+      .get('guilds')
+      .find({ id: message?.guild?.id })
+      .value()
+    if (!guildCache) {
+      guildCache = addGuildToDB(message.guild)
+      log(
+        `created guild record in db${
+          message.guild?.name
+            ? ` | On server: \`${message.guild?.name}\` - \`${message.guild?.id}\``
+            : ''
+        }`
+      )
+    }
+
     let channel
     const channelMention = getFlagValue(this.flags.channel.aliases, flags)
     if (channelMention) {
@@ -100,38 +127,47 @@ module.exports = {
       if (!channelFromMention)
         return reply(message, `channel you have mentioned does not exist`)
       channel = channelFromMention?.id
+    } else if (guildCache?.channel) {
+      channel = guildCache.channel
     } else {
-      let guild = global.db
-        .get('guilds')
-        .find({ id: message?.guild?.id })
-        .value()
-      if (!guild) {
-        guild = addGuildToDB(message.guild)
-        log(
-          `created guild record in db${
-            message.guild?.name
-              ? ` | On server: \`${message.guild?.name}\` - \`${message.guild?.id}\``
-              : ''
-          }`
-        )
-      }
-      if (!guild?.channel) {
-        client.users
-          .fetch(message.guild.ownerId)
-          .then((user) => user.send(strings.channelMissing))
-          .catch((error) => logError(error, { origin: message }))
-        reply(
-          message,
-          'there is no notificaions channel on this server, use a `--channel` flag to override default channel'
-        )
-        return
-      }
-      channel = guild.channel
+      client.users
+        .fetch(message.guild.ownerId)
+        .then((user) => user.send(strings.channelMissing))
+        .catch((error) => logError(error, { origin: message }))
+      reply(
+        message,
+        'there is no notificaions channel on this server, use a `--channel` flag to override default channel'
+      )
+      return
     }
+
+    const roleMention = getFlagValue(this.flags.role.aliases, flags)
+    let role
+    if (roleMention) {
+      const hasPermission = message.member.permissions.has('MANAGE_ROLES')
+      const hasRole = message.member.roles.cache.find(
+        (r) => r.name === config.master_role
+      )
+
+      if (!hasPermission && !hasRole) {
+        return reply(
+          message,
+          `you need to have either \`${config.master_role}\` role, or \`MANAGE_ROLE\` permission, in order to use \`--role\` flag`
+        )
+      }
+
+      role = getRoleFromMention(message, roleMention)
+      if (!role) {
+        return reply(message, `role you have mentioned does not exist`)
+      }
+    }
+
     const notag = args.includes('notag')
     const dnd = args.includes('dnd')
+    const dm = args.includes('dm')
     const d = new Date()
     const lastNotification = d.setSeconds(d.getSeconds() - debounce)
+    const stalkerID = role ? role.id : message.author.id
     let targets = []
 
     for (let member of members) {
@@ -139,37 +175,42 @@ module.exports = {
 
       const alreadyStalking = global.db
         .get('stalkers')
-        .find({ id: message.author.id, target: member.id })
+        .find({ id: stalkerID, target: member.id })
         .value()
 
       let record = {
-        id: message.author.id,
+        id: stalkerID,
+        notify: role ? 'role' : 'user',
         target: member.id,
         guildID: message.guild.id,
         channel: channel,
         debounce: debounce,
         mode: mode,
-        notag: notag,
-        dnd: dnd,
+        notag: !dm && !role ? notag : false,
+        dnd: !role ? dnd : false,
+        dm: !role ? dm : false,
         last_notification: lastNotification,
       }
 
       if (alreadyStalking) {
         global.db
           .get('stalkers')
-          .find({ id: message.author.id, target: member.id })
+          .find({ id: stalkerID, target: member.id })
           .assign(record)
           .write()
       } else {
         global.db.get('stalkers').push(record).write()
       }
+
       targets.push(member.username)
     }
 
     if (!targets.length)
-      return reply(message, `you already stalk everyone you have mentioned`)
+      return reply(message, `no suitable users were mentioned`)
 
-    const stalker = `\`${message.author.username}\``,
+    const stalker = role
+        ? `\`${role.name}\` (role)`
+        : `\`${message.author.username}\` (user)`,
       last = targets.slice(-1),
       allButLast = targets.slice(0, -1).join('`, `'),
       stalked =
@@ -182,24 +223,21 @@ module.exports = {
       name: 'Record created',
       iconURL: client.user.displayAvatarURL(),
     }
-    const description = `${stalker} now stalks ${stalked} in <#${channel}> channel`
+    const description = `${stalker} now stalks ${stalked} in ${
+      dm ? 'DM' : `<#${channel}> channel`
+    }`
     const fields = [
       {
         name: 'Mode:',
         value: `\`${mode}\``,
         inline: true,
       },
-      {
-        name: 'DND:',
-        value: `\`${dnd}\``,
-        inline: true,
-      },
-      {
-        name: 'No Tag',
-        value: `\`${notag}\``,
-        inline: true,
-      },
     ]
+
+    if (notag)
+      fields.push({ name: 'No Tag', value: `\`${notag}\``, inline: true })
+    if (dnd) fields.push({ name: 'DND:', value: `\`${dnd}\``, inline: true })
+    if (dm) fields.push({ name: 'DM', value: `\`${dm}\``, inline: true })
 
     const embed = new MessageEmbed({
       color: '#509624',

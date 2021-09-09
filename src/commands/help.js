@@ -74,15 +74,16 @@ module.exports = {
 }
 
 function addArguments(embed, args) {
-  let info = '\n* - required | ? - optional\n'
-
   let required = ''
   let optional = ''
-  if (args?.required?.length) required = `\n* ${args.required.join('\n* ')}\n`
-  if (args?.optional?.length) optional = `\n? ${args.optional.join('\n? ')}\n`
+  if (args?.required?.length) required = `${args.required.join('\n')}`
+  if (args?.optional?.length) optional = `${args.optional.join('\n')}\n`
 
   if (required || optional)
-    embed.addField('Arguments:', `\`\`\`md${info}${required}${optional}\`\`\``)
+    embed.addField(
+      'Arguments:',
+      `\`\`\`md\nRequired:\n${required}\n\nOptional:\n${optional}\`\`\``
+    )
 }
 
 function addFlags(embed, flags) {
@@ -91,8 +92,10 @@ function addFlags(embed, flags) {
     let [, values] = flag
 
     let overview = `${values.aliases[0]} - ${values.description}\n`
-    let aliases = `#aliases: ${values.aliases.join(', ')}\n`
-    let defaultValue = `#default: ${values.default}\n`
+    let aliases = values.aliases?.length
+      ? `#aliases: ${values.aliases.join(', ')}\n`
+      : ''
+    let defaultValue = values.default ? `#default: ${values.default}\n` : ''
     let variants = ''
 
     if (values.variants) {

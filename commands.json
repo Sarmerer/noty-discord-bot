@@ -1,0 +1,63 @@
+[
+  {
+    "name": "stalk",
+    "type": 1,
+    "description": "Subscribe to someonce's presence status",
+    "options": [
+      {
+        "name": "target",
+        "description": "User/bot yout want to stalk",
+        "type": 6,
+        "required": true
+      },
+      {
+        "name": "mode",
+        "description": "Get notifications when target's status is...",
+        "type": 3,
+        "required": false,
+        "choices": [
+          {
+            "name": "Online or Offline",
+            "value": "ooo"
+          },
+          {
+            "name": "Any",
+            "value": "any"
+          },
+          {
+            "name": "Online",
+            "value": "online"
+          },
+          {
+            "name": "Offline",
+            "value": "offline"
+          }
+        ]
+      },
+      {
+        "name": "channel",
+        "description": "Override default notifications channel",
+        "type": 7,
+        "required": false
+      },
+      {
+        "name": "dnd",
+        "description": "Enable/disable notifications in `do not disturb` mode",
+        "type": 5,
+        "required": false
+      },
+      {
+        "name": "notag",
+        "description": "Enable/disable your mention in notifications",
+        "type": 5,
+        "required": false
+      },
+      {
+        "name": "notag",
+        "description": "Time (in seconds), that should pass, before the next notification",
+        "type": 4,
+        "required": false
+      }
+    ]
+  }
+]

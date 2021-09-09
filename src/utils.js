@@ -49,6 +49,16 @@ module.exports = {
     }
   },
 
+  getRoleFromMention(message, mention) {
+    if (typeof mention != 'string') return
+    if (mention.startsWith('<@&') && mention.endsWith('>')) {
+      const roleID = mention.slice(3, -1)
+      if (!roleID) return
+
+      return message.guild.roles.cache.find((r) => r.id === roleID)
+    }
+  },
+
   getStalkersCount() {
     return [
       ...new Set(

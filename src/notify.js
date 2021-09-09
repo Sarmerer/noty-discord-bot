@@ -24,6 +24,7 @@ function shouldNotify(mode = 'online', oldPresence, newPresence) {
 
 const notify = async (oldPresence, newPresence) => {
   if (!statusVariants.includes(newPresence.status)) return
+  if (!oldPresence?.status) oldPresence = { status: 'offline' }
 
   const stalkers = filterStalkers(newPresence)
   if (!stalkers.length) return
@@ -33,17 +34,22 @@ const notify = async (oldPresence, newPresence) => {
     .catch((error) => logError(error, { origin: newPresence }))
   if (!target) return
 
-  for (s of stalkers) {
-    const stalker = await newPresence.guild.members
-      .fetch(s.id)
-      .catch((error) => {
-        if (error.httpStatus != 404) logError(error, { origin: newPresence })
-      })
-    if (!stalker) continue // TODO delete stalk record from database
+  for (const s of stalkers) {
+    const stalker =
+      !s.notify || s.notify == 'user'
+        ? await newPresence.guild.members.fetch(s.id).catch((error) => {
+            if (error.httpStatus != 404)
+              logError(error, { origin: newPresence })
+          })
+        : null
 
-    const stalkerStatus = stalker.presence?.status
-    if (s.dnd && (stalkerStatus === 'offline' || stalkerStatus === 'dnd'))
-      continue
+    if (!s.notify || s.notify == 'user') {
+      if (!stalker) continue // TODO delete stalk record from database
+
+      const stalkerStatus = stalker.presence?.status
+      if (s.dnd && (stalkerStatus === 'offline' || stalkerStatus === 'dnd'))
+        continue
+    }
 
     if (!shouldNotify(s.mode, oldPresence?.status, newPresence.status)) continue
 
@@ -60,13 +66,18 @@ const notify = async (oldPresence, newPresence) => {
       .assign({ last_notification: new Date() })
       .write()
 
-    const channel = await getNotificaionChannel(s.channel, guildInDB.channel)
+    const text = `${
+      s.notag ? '' : `<@${s.notify == 'role' ? '&' : ''}${s.id}>, `
+    }${target.username} just went \`${newPresence.status}\`${
+      s.dm ? ` in \`${newPresence.guild.name}\` guild` : ''
+    }`
+
+    const channel = s.dm
+      ? stalker
+      : await getNotificaionChannel(s.channel, guildInDB.channel)
+
     if (!channel)
       return directMessage(newPresence.guild.ownerId, strings.channelMissing)
-
-    const text = `${s.notag ? '' : `<@${s.id}>, `}${
-      target.username
-    } just went \`${newPresence.status}\``
 
     channel.send(text).catch((error) => {
       if (error.code == 50001)

@@ -11,7 +11,22 @@ async function init() {
   if (!logChannel) return { error: 'could not find logs channel' }
 }
 
-function log(text, options = { warn: false, error: false, silent: false }) {
+/**
+ *
+ * @param {string} text log text
+ * @param {object} [options] logger options
+ * @param {boolean} [options.error=false] if true, the log will be in red
+ * @param {boolean} [options.warn=false] if true, the log will be in yellow
+ * @param {boolean} [options.silent=false] if true, the log will not be sent to the logs channel
+ */
+function log(text, options) {
+  if (options == null || typeof options !== 'object')
+    options = {
+      error: false,
+      warn: false,
+      silent: false,
+    }
+
   const esc = text?.replace?.(/`/gm, '')
   if (esc) {
     if (options.error) console.error(esc)
@@ -31,6 +46,17 @@ function log(text, options = { warn: false, error: false, silent: false }) {
     .catch(console.log)
 }
 
+/**
+ *
+ * @param {string} errorText error text
+ * @param {object} [options] logger options
+ * @param {object} [options.origin=null] instance, where the error was thrown
+ * @param {object} [options.origin.guild] discord guild where the error was thrown
+ * @param {string} options.origin.guild.id guild id
+ * @param {string} options.origin.guild.name guild name
+ *
+ * @param {boolean} [options.silent=true] if true, the log will not be sent to the logs channel
+ */
 function logError(errorText, options = { origin: null, silent: true }) {
   log(
     `${errorText}${
