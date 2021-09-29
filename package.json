@@ -1,7 +1,7 @@
 {
   "name": "stalker-discord-bot",
-  "version": "1.4.2",
-  "description": "",
+  "version": "1.6.3",
+  "description": "Stalker Bot implements what Discord still doesn't have: notify you, when someone goes online or offline. Useful for tracking unexpected bot crashes",
   "main": "./src/index.js",
   "scripts": {
     "start": "node ./src/index.js"
@@ -29,6 +29,6 @@
     "lowdb": "^1.0.0"
   },
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=16.7.0"
   }
 }
