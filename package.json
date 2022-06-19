@@ -1,14 +1,17 @@
 {
-  "name": "stalker-discord-bot",
-  "version": "1.6.3",
-  "description": "Stalker Bot implements what Discord still doesn't have: notify you, when someone goes online or offline. Useful for tracking unexpected bot crashes",
+  "name": "noty-discord-bot",
+  "version": "2.0.0",
+  "description": "Noty Bot implements what Discord still doesn't have: notify you, when someone goes online or offline. Useful for tracking bot crashes",
   "main": "./src/index.js",
   "scripts": {
-    "start": "node ./src/index.js"
+    "start": "npm run sync-commands && npm run start-only",
+    "start-only": "node ./src/index.js",
+    "sync-commands": "node ./src/scripts/sync-slash-commands.js",
+    "sync-slash-commands": "node ./src/scripts/sync-slash-commands.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Sarmerer/stalker-discrd-bot.git"
+    "url": "https://github.com/Sarmerer/noty-discrd-bot.git"
   },
   "keywords": [
     "discord.js",
@@ -18,15 +21,17 @@
   "author": "sarmerer",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Sarmerer/stalker-discord-bot/issues"
+    "url": "https://github.com/Sarmerer/noty-discord-bot/issues"
   },
-  "homepage": "https://github.com/Sarmerer/stalker-discord-bot#readme",
-  "imports": {
-    "#config": "./config/index.js"
-  },
+  "homepage": "https://github.com/Sarmerer/noty-discord-bot#readme",
   "dependencies": {
-    "discord.js": "^13.1.0",
+    "@discordjs/rest": "^0.4.1",
+    "discord-api-types": "^0.33.1",
+    "discord.js": "^13.7.0",
     "lowdb": "^1.0.0"
+  },
+  "imports": {
+    "#root": "./"
   },
   "engines": {
     "node": ">=16.7.0"
