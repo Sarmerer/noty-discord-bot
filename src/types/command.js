@@ -42,7 +42,11 @@ class Command {
     }
 
     if (Array.isArray(options.options)) {
-      for (const option of options.options) {
+      const sortedOptions = options.options
+        .slice()
+        .sort((a, b) => b.required_ - a.required_)
+
+      for (const option of sortedOptions) {
         if (!(option instanceof CommandOption)) {
           console.error(`option must be an instance of ${CommandOption.name}`)
           continue
