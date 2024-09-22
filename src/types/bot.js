@@ -1,4 +1,4 @@
-const { Client, Intents } = require('discord.js')
+const { Client, GatewayIntentBits } = require('discord.js')
 const { Database } = require('./db')
 const path = require('node:path')
 
@@ -176,7 +176,7 @@ class Bot {
     this.commands_ = this.readCommands()
 
     this.client_ = new Client({
-      intents: [Intents.FLAGS.GUILDS, ...this.intents_],
+      intents: [GatewayIntentBits.Guilds, ...this.intents_],
     })
 
     console.log('Attaching events...')
