@@ -20,16 +20,15 @@ module.exports = {
       const notyModel = new Noty(noty)
       if (!notyModel.hasMode(status)) continue
 
-      const { notifiedUserId } = noty
+      const { notifiedUserId: userId } = noty
+      const suffix = discriminator ? `#${discriminator}` : ''
+      const message = `${username}${suffix} is now ${status}`
 
       try {
-        await bot.sendDM({
-          userId: notifiedUserId,
-          message: `${username}#${discriminator} is now ${status}`,
-        })
+        await bot.sendDM({ userId, message })
       } catch (error) {
         console.error(
-          `Failed to notify ${notifiedUserId} of ${userId}'s ${status}:`,
+          `Failed to notify ${userId} of ${userId}'s ${status}:`,
           error
         )
       }
